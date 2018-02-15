@@ -8,7 +8,6 @@
 
 import UIKit
 import Pastel
-import FirebaseAuth
 
 class SignInViewController: UIViewController, UITextFieldDelegate {
 
@@ -87,15 +86,15 @@ class SignInViewController: UIViewController, UITextFieldDelegate {
             errorLabel.text = "Please enter a password with at least six characters"
             errorLabel.isHidden = false
         } else {
-            Auth.auth().signIn(withEmail: emailText, password: passwordText) { (user, error) in
-                if error != nil {
-                    self.errorLabel.text = error!.localizedDescription
-                    self.errorLabel.isHidden = false
-                } else {
-                    self.errorLabel.isHidden = true;
+            AuthService.instance.signInWithEmail(email: emailText, password: passwordText, responseHandler: { (authenticationResponse) in
+                if authenticationResponse.isEmpty {
+                    self.errorLabel.isHidden = true
                     // Show the home screen.
+                } else {
+                    self.errorLabel.text = authenticationResponse
+                    self.errorLabel.isHidden = false
                 }
-            }
+            })
         }
     }
 

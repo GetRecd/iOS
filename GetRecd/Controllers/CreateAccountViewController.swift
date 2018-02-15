@@ -8,7 +8,6 @@
 
 import UIKit
 import Pastel
-import FirebaseAuth
 
 class CreateAccountViewController: UIViewController, UITextFieldDelegate {
 
@@ -110,15 +109,15 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
             errorLabel.text = "Please ensure passwords match"
             errorLabel.isHidden = false
         } else {
-            Auth.auth().createUser(withEmail: emailText, password: passwordText) { (user, error) in
-                if error != nil {
-                    self.errorLabel.text = error!.localizedDescription
-                    self.errorLabel.isHidden = false
-                } else {
-                    self.errorLabel.isHidden = true;
+            AuthService.instance.createAccountWithEmail(email: emailText, password: passwordText, responseHandler: { (creationResponse) in
+                if creationResponse.isEmpty {
+                    self.errorLabel.isHidden = true
                     // Show the home screen.
+                } else {
+                    self.errorLabel.text = creationResponse
+                    self.errorLabel.isHidden = false
                 }
-            }
+            })
         }
     }
 
