@@ -112,6 +112,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
             AuthService.instance.createAccountWithEmail(email: emailText, password: passwordText, responseHandler: { (creationResponse) in
                 if creationResponse.isEmpty {
                     self.errorLabel.isHidden = true
+                    DataService.instance.createOrUpdateUser(uid: AuthService.instance.getUserUid(), userData: ["email" : emailText])
                     // Show the home screen.
                 } else {
                     self.errorLabel.text = creationResponse

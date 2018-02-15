@@ -40,6 +40,14 @@ class AuthService {
         }
     }
 
+    func isAuthenticated() -> Bool {
+        return authInstance != nil
+    }
+
+    func getUserUid() -> String {
+        return isAuthenticated() ? authInstance!.currentUser!.uid : ""
+    }
+
     func signOut() {
         if authInstance != nil {
             do {

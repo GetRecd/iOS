@@ -89,6 +89,7 @@ class SignInViewController: UIViewController, UITextFieldDelegate {
             AuthService.instance.signInWithEmail(email: emailText, password: passwordText, responseHandler: { (authenticationResponse) in
                 if authenticationResponse.isEmpty {
                     self.errorLabel.isHidden = true
+                    DataService.instance.createOrUpdateUser(uid: AuthService.instance.getUserUid(), userData: ["email" : emailText])
                     // Show the home screen.
                 } else {
                     self.errorLabel.text = authenticationResponse
