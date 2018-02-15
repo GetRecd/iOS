@@ -8,6 +8,7 @@
 
 import UIKit
 import Pastel
+import FirebaseAuth
 
 class SignInViewController: UIViewController, UITextFieldDelegate {
 
@@ -75,12 +76,27 @@ class SignInViewController: UIViewController, UITextFieldDelegate {
         view.layer.masksToBounds = true
     }
 
-    @IBAction func signInButonPressed(_ sender: Any) {
+    @IBAction func signInButtonPressed(_ sender: Any) {
         guard let emailText = emailTextField.text else {return}
         guard let passwordText = passwordTextField.text else {return}
 
-        // Try to sign the user in with the given credentials
-        // Update errorLabel if necessary, otherwise segue to main screen!
+        if emailText.count == 0 || !emailText.contains("@") {
+            errorLabel.text = "Please enter a valid email address"
+            errorLabel.isHidden = false
+        } else if passwordText.count < 6 {
+            errorLabel.text = "Please enter a password with at least six characters"
+            errorLabel.isHidden = false
+        } else {
+            Auth.auth().signIn(withEmail: emailText, password: passwordText) { (user, error) in
+                if error != nil {
+                    self.errorLabel.text = error!.localizedDescription
+                    self.errorLabel.isHidden = false
+                } else {
+                    self.errorLabel.isHidden = true;
+                    // Show the home screen.
+                }
+            }
+        }
     }
 
     @objc func dismissKeyboard(sender: UITapGestureRecognizer) {
