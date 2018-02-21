@@ -435,7 +435,7 @@
                                                     </constraints>
                                                 </imageView>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Hvo-tA-50p">
-                                                    <rect key="frame" x="162" y="116" width="50" height="28"/>
+                                                    <rect key="frame" x="162" y="138" width="50" height="28"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="50" id="Vh0-LT-lIc"/>
                                                         <constraint firstAttribute="height" constant="28" id="ZlB-5H-pRM"/>
@@ -447,7 +447,7 @@
                                                 </button>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="bottom" secondItem="Hvo-tA-50p" secondAttribute="bottom" constant="45.5" id="1XS-vy-mrG"/>
+                                                <constraint firstAttribute="bottom" secondItem="Hvo-tA-50p" secondAttribute="bottom" constant="23.5" id="1XS-vy-mrG"/>
                                                 <constraint firstItem="Jvf-D4-Q9J" firstAttribute="top" secondItem="UlW-cN-MtI" secondAttribute="top" constant="11" id="GJR-xG-0FB"/>
                                                 <constraint firstItem="Jvf-D4-Q9J" firstAttribute="centerX" secondItem="UlW-cN-MtI" secondAttribute="centerX" id="R5l-3L-jp5"/>
                                                 <constraint firstItem="jXx-0H-qQj" firstAttribute="top" secondItem="Jvf-D4-Q9J" secondAttribute="bottom" constant="8" id="eA9-EF-qGL"/>
