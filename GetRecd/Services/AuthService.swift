@@ -64,10 +64,11 @@ class AuthService {
     
     func deleteAccount(success: @escaping (Bool) -> (Void)) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        DataService.instance.deleteUser(uid: uid)
         Auth.auth().currentUser?.delete(completion: { (error) in
             if error != nil {
                 success(false)
-                DataService.instance.deleteUser(uid: uid)
                 print("DELETE USER ERROR: \(String(describing: error))")
             } else {
                 success(true)
