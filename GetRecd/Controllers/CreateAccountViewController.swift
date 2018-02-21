@@ -8,8 +8,9 @@
 
 import UIKit
 import Pastel
+import GoogleSignIn
 
-class CreateAccountViewController: UIViewController, UITextFieldDelegate {
+class CreateAccountViewController: UIViewController, UITextFieldDelegate, GIDSignInUIDelegate {
 
     @IBOutlet weak var emailView: UIView!
     @IBOutlet weak var emailTextField: UITextField!
@@ -120,6 +121,10 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
                 }
             })
         }
+    }
+    
+    @IBAction func googleSignInButtonPressed(_ sender: Any) {
+        AuthService.instance.googleAuthenticate(forViewController: self)
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
