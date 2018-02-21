@@ -80,6 +80,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate, GIDSig
         border.borderWidth = borderWidth
         nameView.layer.addSublayer(border)
 
+        border = CALayer()
         border.borderColor = UIColor(red:1, green:1, blue:1, alpha:1.0).cgColor
         border.frame = CGRect(x: 0, y: emailView.frame.size.height - borderWidth, width: emailView.frame.size.width, height: 1)
         border.borderWidth = borderWidth
@@ -127,7 +128,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate, GIDSig
             AuthService.instance.createAccountWithEmail(email: emailText, password: passwordText, responseHandler: { (creationResponse) in
                 if creationResponse.isEmpty {
                     self.errorLabel.isHidden = true
-                    DataService.instance.createOrUpdateUser(uid: AuthService.instance.getUserUid(), userData: ["email" : emailText])
+                    DataService.instance.createOrUpdateUser(uid: AuthService.instance.getUserUid(), userData: ["email": emailText, "name": nameText])
                     DispatchQueue.main.async {
                         self.performSegue(withIdentifier: "RecFeed", sender: self)
                     }
