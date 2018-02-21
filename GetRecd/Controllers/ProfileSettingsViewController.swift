@@ -100,12 +100,12 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("CELL SELECTED: \(indexPath.section)")
-        if indexPath.section == 3, indexPath.row == 2 {
+        if indexPath.section == 3, indexPath.row == 3 {
             print("LOG OUT PRESSED")
             logOut()
         }
         
-        if indexPath.section == 3, indexPath.row == 1 {
+        if indexPath.section == 3, indexPath.row == 2 {
             print("DELETE ACCOUNT PRESSED")
             
             let alert = UIAlertController(title: "Deleting Account", message: "Are you sure you want to delete your account? This cannot be undone!", preferredStyle: .alert)
