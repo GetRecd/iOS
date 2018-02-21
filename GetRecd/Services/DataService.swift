@@ -85,4 +85,8 @@ class DataService {
         
         getImageFromUrl.resume()
     }
+    
+    func deleteUser(uid: String) {
+        REF_USERS.child(uid).removeValue()
+    }
 }

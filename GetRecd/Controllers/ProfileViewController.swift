@@ -19,8 +19,8 @@ class ProfileViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+    
         
-        self.profilePicture.layer.cornerRadius = self.profilePicture.frame.size.width/2
     }
     
     
@@ -113,12 +113,16 @@ class ProfileViewController: UITableViewController {
         DataService.instance.getUser(userID: uid) { (user) in
             self.currentUser = user
             
+            print("GETTING USER ON PROFILE")
+            DispatchQueue.main.async {
+                self.nameLabel.text = self.currentUser.name
+                self.bioTextView.text = self.currentUser.bio.isEmpty ? "No Bio": self.currentUser?.bio
+                self.profilePicture.layer.cornerRadius = self.profilePicture.frame.size.width/2
+            }
+            
             DataService.instance.getProfilePicture(user: self.currentUser, handler: { (image) in
-                
                 DispatchQueue.main.async {
-                    self.profilePicture.image = image
-                    self.nameLabel.text = self.currentUser.name
-                    self.bioTextView.text = self.currentUser.bio.isEmpty ? "No Bio": self.currentUser?.bio
+                self.profilePicture.image = image
                 }
             })
         }

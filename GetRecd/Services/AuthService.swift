@@ -67,7 +67,7 @@ class AuthService {
         Auth.auth().currentUser?.delete(completion: { (error) in
             if error != nil {
                 success(false)
-                DataService.instance.createOrUpdateUser(uid:uid, userData: [:])
+                DataService.instance.deleteUser(uid: uid)
                 print("DELETE USER ERROR: \(String(describing: error))")
             } else {
                 success(true)
