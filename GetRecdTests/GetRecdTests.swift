@@ -11,9 +11,11 @@ import XCTest
 @testable import GetRecd
 
 class GetRecdTests: XCTestCase {
-    
+    var dataService: DataService!
+
     override func setUp() {
         super.setUp()
+        dataService = DataService()
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
