@@ -16,6 +16,6 @@ class AuthenticationViewController: UIViewController, GIDSignInUIDelegate {
     }
     
     @IBAction func facebookSignInButtonPressed(_ sender: Any) {
-
+        AuthService.instance.facebookAuthenticate(forViewController: self)
     }
 }

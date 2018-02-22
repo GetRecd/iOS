@@ -62,6 +62,20 @@ class AuthService: NSObject, GIDSignInDelegate {
         GIDSignIn.sharedInstance().uiDelegate = controller
         GIDSignIn.sharedInstance().signIn()
     }
+    
+    func facebookAuthenticate(forViewController controller: AuthenticationViewController) {
+        let loginManager = LoginManager()
+        loginManager.logIn(readPermissions: [.publicProfile, .email], viewController: controller) { (loginResult) in
+            switch loginResult {
+            case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                controller.performSegue(withIdentifier: "RecFeed", sender: controller)
+            case .cancelled:
+                print("Cancelled Facebook login.")
+            case .failed(let error):
+                print(error)
+            }
+        }
+    }
 
     func createAccountWithEmail(email: String, password: String, responseHandler: @escaping (String) -> (Void)) {
         Auth.auth().createUser(withEmail: email, password: password) { (user, error) in
