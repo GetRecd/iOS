@@ -113,16 +113,16 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate, GIDSig
         guard let confirmText = confirmPasswordTextField.text else {return}
 
         if nameText.count == 0 {
-            errorLabel.text = "Please enter a name with at least one character"
+            errorLabel.text = "Please enter a name with at least one character."
             errorLabel.isHidden = false
         } else if emailText.count == 0 || !emailText.contains("@") {
-            errorLabel.text = "Please enter a valid email address"
+            errorLabel.text = "Please enter a valid email address."
             errorLabel.isHidden = false
         } else if passwordText.count < 6 || confirmText.count < 6 {
-            errorLabel.text = "Please enter a password with at least six characters"
+            errorLabel.text = "Please enter a password with at least six characters."
             errorLabel.isHidden = false
         } else if passwordText != confirmText {
-            errorLabel.text = "Please ensure passwords match"
+            errorLabel.text = "Please ensure passwords match."
             errorLabel.isHidden = false
         } else {
             AuthService.instance.createAccountWithEmail(email: emailText, password: passwordText, responseHandler: { (creationResponse) in
