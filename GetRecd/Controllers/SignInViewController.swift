@@ -8,9 +8,8 @@
 
 import UIKit
 import Pastel
-import GoogleSignIn
 
-class SignInViewController: UIViewController, UITextFieldDelegate, GIDSignInUIDelegate {
+class SignInViewController: AuthenticationViewController, UITextFieldDelegate {
 
     @IBOutlet weak var emailView: UIView!
     @IBOutlet weak var emailTextField: UITextField!
@@ -27,6 +26,8 @@ class SignInViewController: UIViewController, UITextFieldDelegate, GIDSignInUIDe
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(sender:)))
         view.addGestureRecognizer(tap)
 
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
         setupVisuals()
         drawHorizontalLine(view: orView)
     }
@@ -63,14 +64,14 @@ class SignInViewController: UIViewController, UITextFieldDelegate, GIDSignInUIDe
         var border = CALayer()
         let width = CGFloat(1.0)
         border.borderColor = UIColor.white.cgColor
-        border.frame = CGRect(x: 0, y: view.frame.size.height/2 + 1, width:  view.frame.size.width / 2 - 30, height: width)
+        border.frame = CGRect(x: 0, y: view.frame.size.height / 2 + 1, width:  view.frame.size.width / 2 - 30, height: width)
         border.borderWidth = width
         view.layer.addSublayer(border)
         view.layer.masksToBounds = true
 
         border = CALayer()
         border.borderColor = UIColor.white.cgColor
-        border.frame = CGRect(x: view.frame.size.width / 2 + 30, y: view.frame.size.height/2 + 1, width: view.frame.size.width, height: width)
+        border.frame = CGRect(x: view.frame.size.width / 2 + 30, y: view.frame.size.height / 2 + 1, width: view.frame.size.width, height: width)
         border.borderWidth = width
         view.layer.addSublayer(border)
         view.layer.masksToBounds = true
@@ -81,10 +82,10 @@ class SignInViewController: UIViewController, UITextFieldDelegate, GIDSignInUIDe
         guard let passwordText = passwordTextField.text else {return}
 
         if emailText.count == 0 || !emailText.contains("@") {
-            errorLabel.text = "Please enter a valid email address"
+            errorLabel.text = "Please enter a valid email address."
             errorLabel.isHidden = false
         } else if passwordText.count < 6 {
-            errorLabel.text = "Please enter a password with at least six characters"
+            errorLabel.text = "Please enter a password with at least six characters."
             errorLabel.isHidden = false
         } else {
             AuthService.instance.signInWithEmail(email: emailText, password: passwordText, responseHandler: { (authenticationResponse) in
