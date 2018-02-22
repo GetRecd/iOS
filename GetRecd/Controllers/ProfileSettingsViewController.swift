@@ -9,7 +9,7 @@
 import UIKit
 import FirebaseStorage
 
-class ProfileSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ProfileSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate {
 
     @IBOutlet weak var profilePicture: UIImageView!
     @IBOutlet weak var bioTextView: UITextView!
@@ -22,7 +22,7 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
+            bioTextView.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -172,6 +172,22 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
         DispatchQueue.main.async {
             self.imagePicker.dismiss(animated: true, completion: nil)
         }
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        
+        if text == "\n" {
+            textView.resignFirstResponder()
+            return false
+        }
+        
+        let count = bioTextView.text.count
+        if range.length + range.location > count {
+            return false
+        }
+        
+        let newLength = count + text.count - range.length
+        return newLength <= 140
     }
     
     override var prefersStatusBarHidden: Bool {
