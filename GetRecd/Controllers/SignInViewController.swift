@@ -9,7 +9,7 @@
 import UIKit
 import Pastel
 
-class SignInViewController: UIViewController, UITextFieldDelegate {
+class SignInViewController: AuthenticationViewController, UITextFieldDelegate {
 
     @IBOutlet weak var emailView: UIView!
     @IBOutlet weak var emailTextField: UITextField!
@@ -62,14 +62,14 @@ class SignInViewController: UIViewController, UITextFieldDelegate {
         var border = CALayer()
         let width = CGFloat(1.0)
         border.borderColor = UIColor.white.cgColor
-        border.frame = CGRect(x: 0, y: view.frame.size.height/2 + 1, width:  view.frame.size.width / 2 - 30, height: width)
+        border.frame = CGRect(x: 0, y: view.frame.size.height / 2 + 1, width:  view.frame.size.width / 2 - 30, height: width)
         border.borderWidth = width
         view.layer.addSublayer(border)
         view.layer.masksToBounds = true
 
         border = CALayer()
         border.borderColor = UIColor.white.cgColor
-        border.frame = CGRect(x: view.frame.size.width / 2 + 30, y: view.frame.size.height/2 + 1, width: view.frame.size.width, height: width)
+        border.frame = CGRect(x: view.frame.size.width / 2 + 30, y: view.frame.size.height / 2 + 1, width: view.frame.size.width, height: width)
         border.borderWidth = width
         view.layer.addSublayer(border)
         view.layer.masksToBounds = true
@@ -90,13 +90,19 @@ class SignInViewController: UIViewController, UITextFieldDelegate {
                 if authenticationResponse.isEmpty {
                     self.errorLabel.isHidden = true
                     DataService.instance.createOrUpdateUser(uid: AuthService.instance.getUserUid(), userData: ["email" : emailText])
-                    // Show the home screen.
+                    DispatchQueue.main.async {
+                        self.performSegue(withIdentifier: "RecFeed", sender: self)
+                    }
                 } else {
                     self.errorLabel.text = authenticationResponse
                     self.errorLabel.isHidden = false
                 }
             })
         }
+    }
+
+    @IBAction func googleSignInButtonPressed(_ sender: Any) {
+        AuthService.instance.googleAuthenticate(forViewController: self)
     }
 
     @objc func dismissKeyboard(sender: UITapGestureRecognizer) {
@@ -115,5 +121,9 @@ class SignInViewController: UIViewController, UITextFieldDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override var prefersStatusBarHidden: Bool {
+        return true
     }
 }
