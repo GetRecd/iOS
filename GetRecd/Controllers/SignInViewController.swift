@@ -27,6 +27,8 @@ class SignInViewController: UIViewController, UITextFieldDelegate, GIDSignInUIDe
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(sender:)))
         view.addGestureRecognizer(tap)
 
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
         setupVisuals()
         drawHorizontalLine(view: orView)
     }
