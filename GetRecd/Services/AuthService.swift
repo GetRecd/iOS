@@ -29,16 +29,14 @@ class AuthService: NSObject, GIDSignInDelegate {
             print(error.localizedDescription)
             return
         }
-
         guard let authentication = user.authentication else { return }
-        let credential = GoogleAuthProvider.credential(withIDToken: authentication.idToken,
-                accessToken: authentication.accessToken)
-
+        let credential = GoogleAuthProvider.credential(withIDToken: authentication.idToken, accessToken: authentication.accessToken)
         Auth.auth().signIn(with: credential) { (user, error) in
             if let error = error {
                 print(error.localizedDescription)
                 return
             }
+            self.authInstance = Auth.auth()
             guard let user = user else {return}
             var userData = [String:Any]()
             if (user.displayName != nil) {
@@ -67,8 +65,16 @@ class AuthService: NSObject, GIDSignInDelegate {
         let loginManager = LoginManager()
         loginManager.logIn(readPermissions: [.publicProfile, .email], viewController: controller) { (loginResult) in
             switch loginResult {
-            case .success(let grantedPermissions, let declinedPermissions, let accessToken):
-                controller.performSegue(withIdentifier: "RecFeed", sender: controller)
+            case .success(_, _, let accessToken):
+                let firebaseCredential = FacebookAuthProvider.credential(withAccessToken: accessToken.authenticationToken)
+                Auth.auth().signIn(with: firebaseCredential) { (user, error) in
+                    if let error = error {
+                        print(error.localizedDescription)
+                        return
+                    }
+                    self.authInstance = Auth.auth()
+                    controller.performSegue(withIdentifier: "RecFeed", sender: controller)
+                }
             case .cancelled:
                 print("Cancelled Facebook login.")
             case .failed(let error):
