@@ -101,10 +101,6 @@ class SignInViewController: AuthenticationViewController, UITextFieldDelegate {
         }
     }
 
-    @IBAction func googleSignInButtonPressed(_ sender: Any) {
-        AuthService.instance.googleAuthenticate(forViewController: self)
-    }
-
     @objc func dismissKeyboard(sender: UITapGestureRecognizer) {
         view.endEditing(true)
     }
