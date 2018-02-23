@@ -11,7 +11,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Search-->
+        <!--Search View Controller-->
         <scene sceneID="Cee-Ys-5xb">
             <objects>
                 <tableViewController id="Lbf-G5-ETF" customClass="SearchViewController" customModule="GetRecd" customModuleProvider="target" sceneMemberID="viewController">
@@ -85,7 +85,6 @@
                             <outlet property="delegate" destination="Lbf-G5-ETF" id="dww-No-fjF"/>
                         </connections>
                     </tableView>
-                    <tabBarItem key="tabBarItem" title="Search" id="C4S-RM-aSv"/>
                     <navigationItem key="navigationItem" id="4zW-Ml-FxM">
                         <barButtonItem key="rightBarButtonItem" style="plain" id="Whs-Go-o42">
                             <button key="customView" hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="IcD-ys-OQg">
@@ -116,7 +115,9 @@
         <scene sceneID="hKN-dV-acN">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="naU-GN-O5H" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" systemItem="search" id="dCm-VD-aoP"/>
                     <toolbarItems/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="cDj-UT-7VY">
                         <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>

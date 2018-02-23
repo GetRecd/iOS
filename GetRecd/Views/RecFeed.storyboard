@@ -13,7 +13,7 @@
         <scene sceneID="DLy-OT-2mI">
             <objects>
                 <viewControllerPlaceholder storyboardName="Profile" id="hYX-Uh-LTD" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Item" id="EpI-xy-qKv"/>
+                    <tabBarItem key="tabBarItem" title="" id="EpI-xy-qKv"/>
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nNV-mM-MLD" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -23,7 +23,7 @@
         <scene sceneID="8jS-Vd-4dj">
             <objects>
                 <viewControllerPlaceholder storyboardName="Search" id="DZl-QX-N5K" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Item" id="d4i-um-RQB"/>
+                    <tabBarItem key="tabBarItem" title="" id="d4i-um-RQB"/>
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="etw-lb-IuQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
