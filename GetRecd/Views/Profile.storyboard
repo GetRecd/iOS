@@ -183,15 +183,17 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="103.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hQD-JL-Nnd">
-                                                    <rect key="frame" x="167" y="36" width="41" height="30"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <state key="normal" title="Music"/>
-                                                    <connections>
-                                                        <segue destination="cEi-eg-94A" kind="presentation" id="Hij-GD-gXA"/>
-                                                    </connections>
-                                                </button>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Music" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YtS-fb-Z2v">
+                                                    <rect key="frame" x="162" y="39.5" width="52" height="26"/>
+                                                    <fontDescription key="fontDescription" name="OpenSans-Regular" family="Open Sans" pointSize="19"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
                                             </subviews>
+                                            <constraints>
+                                                <constraint firstItem="YtS-fb-Z2v" firstAttribute="centerY" secondItem="xnY-oa-YAv" secondAttribute="centerY" id="4Xo-V5-Yt3"/>
+                                                <constraint firstItem="YtS-fb-Z2v" firstAttribute="centerX" secondItem="xnY-oa-YAv" secondAttribute="centerX" id="l09-Fy-dRP"/>
+                                            </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                 </cells>
@@ -208,6 +210,7 @@
                         <outlet property="bioTextView" destination="h8D-UR-7zj" id="fyF-kG-hAX"/>
                         <outlet property="nameLabel" destination="oOd-xc-2T8" id="DGi-dN-pMQ"/>
                         <outlet property="profilePicture" destination="LCq-uh-W45" id="uIE-kb-bHx"/>
+                        <segue destination="cEi-eg-94A" kind="presentation" identifier="showMusicLikes" id="hNt-na-OEe"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5y6-7T-qU0" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -685,7 +688,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="biF-YD-6Mx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="745" y="501"/>
+            <point key="canvasLocation" x="761" y="501"/>
         </scene>
         <!--Main-->
         <scene sceneID="mLB-4G-g5S">

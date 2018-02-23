@@ -46,6 +46,18 @@ class ProfileViewController: UITableViewController {
             settingsVC.profilePictureImage = profilePicture.image
         }
     }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print(indexPath.row)
+        switch (indexPath.row) {
+            case 2:
+                // Segue to music
+                self.performSegue(withIdentifier: "showMusicLikes", sender: nil)
+                tableView.deselectRow(at: indexPath, animated: true)
+            default:
+                break
+        }
+    }
     
     override var prefersStatusBarHidden: Bool {
         return true
@@ -69,6 +81,4 @@ class ProfileViewController: UITableViewController {
             })
         }
     }
-    
 }
-
