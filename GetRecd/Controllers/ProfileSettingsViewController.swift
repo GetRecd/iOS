@@ -98,50 +98,49 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
         }
     }
 
-    // TODO: Clean this code up... merging caused a lot of unclean code
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("CELL SELECTED: \(indexPath.section)")
+        print("Section: \(indexPath.section), Cell: \(indexPath.row)")
 
-        // Music Authorization
+
         switch indexPath.section {
-        case 1:
-            switch indexPath.row {
-            case 0:
-                break
-            case 1:
-                MusicService.sharedInstance.requestAppleCloudServiceAuthorization()
-                MusicService.sharedInstance.requestAppleMediaLibraryAuthorization()
+            // Music Authorization
+            case 2:
+                switch indexPath.row {
+                    case 0:
+                        print("Authenticate with Spotify")
+                    case 1:
+                        print("Authenticate with Apple music")
+                        MusicService.sharedInstance.requestAppleCloudServiceAuthorization()
+                        MusicService.sharedInstance.requestAppleMediaLibraryAuthorization()
+                    default:
+                        break
+                    }
+            // Account Deletion & Log Out
+            case 3:
+                switch indexPath.row {
+                case 2:
+                    let alert = UIAlertController(title: "Deleting Account", message: "Are you sure you want to delete your account? This cannot be undone!", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
+                        self.deleteAccount()
+                    })
+
+                    let no = UIAlertAction(title: "No", style: .default, handler: { (action) in
+                        alert.dismiss(animated: true, completion: nil)
+                    })
+
+                    alert.addAction(yes)
+                    alert.addAction(no)
+                    self.present(alert, animated: true, completion: nil)
+                case 3:
+                    logOut()
+                default:
+                    break
+                }
             default:
                 break
-            }
-        default:
-            break
-        }
-
-        if indexPath.section == 3, indexPath.row == 3 {
-            print("LOG OUT PRESSED")
-            logOut()
-        }
-        
-        if indexPath.section == 3, indexPath.row == 2 {
-            print("DELETE ACCOUNT PRESSED")
-            
-            let alert = UIAlertController(title: "Deleting Account", message: "Are you sure you want to delete your account? This cannot be undone!", preferredStyle: .alert)
-            let yes = UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
-                self.deleteAccount()
-            })
-            
-            let no = UIAlertAction(title: "No", style: .default, handler: { (action) in
-                alert.dismiss(animated: true, completion: nil)
-            })
-            
-            alert.addAction(yes)
-            alert.addAction(no)
-            self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    
+
     @IBAction func editPicturePressed(_ sender: Any) {
         DispatchQueue.main.async {
             self.imagePicker = UIImagePickerController()
