@@ -25,7 +25,6 @@ class ProfileViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         getCurrentUser()
         
         // Hide the navigation bar on the this view controller

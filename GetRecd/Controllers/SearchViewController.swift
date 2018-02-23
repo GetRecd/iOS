@@ -66,7 +66,6 @@ class SearchViewController: UITableViewController {
     
     @IBAction func onAdd(_ sender: Any) {
         DataService.instance.likeSongs(appleMusicSongs: likedAppleMusicSongs, spotifySongs: likedSpotifySongs, success: {
-            
         })
     }
     
@@ -83,8 +82,7 @@ class SearchViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let cell = tableView.cellForRow(at: indexPath) as? SongCell {
-            
-            
+
             if cell.accessoryType == .checkmark {
                 cell.accessoryType = .none
                 switch cell.song.type {
@@ -105,7 +103,6 @@ class SearchViewController: UITableViewController {
                     default:
                         break
                 }
-                
             }
         }
         
