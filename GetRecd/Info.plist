@@ -26,11 +26,20 @@
 				<string>com.googleusercontent.apps.1096423581800-fa37a6fsq5ibkoeblh3g3ge50gepi899</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string></string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict/>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Connect Apple Music account to GetRecd</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-SemiBold.ttf</string>
@@ -43,6 +52,10 @@
 		<string>OpenSans-Bold.ttf</string>
 		<string>OpenSans-BoldItalic.ttf</string>
 		<string>OpenSans-ExtraBold.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -65,5 +78,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>kTCCServiceMediaLibrary</key>
+	<string>Connect Apple Music account to GetRecd</string>
 </dict>
 </plist>
