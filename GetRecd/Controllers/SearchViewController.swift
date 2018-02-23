@@ -117,13 +117,16 @@ class SearchViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SongCell", for: indexPath) as! SongCell
-        
+
+        // Reset the cell from previous use:
+        cell.artistLabel.text = ""
+        cell.artworkView.image = UIImage()
+        cell.nameLabel.text = ""
+
         cell.tag = indexPath.row
         cell.artworkView.tag = indexPath.row
         let song = songs[indexPath.row]
-        
         cell.song = song
-        
         return cell
     }
 
