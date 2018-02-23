@@ -202,7 +202,7 @@
                             <outlet property="delegate" destination="dQe-8a-Qpi" id="GLm-gM-M8Z"/>
                         </connections>
                     </tableView>
-                    <tabBarItem key="tabBarItem" title="Profile" selectedImage="tabProfile" id="SZl-s5-EUM"/>
+                    <tabBarItem key="tabBarItem" title="Profile" image="tabProfile" id="SZl-s5-EUM"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="bioTextView" destination="h8D-UR-7zj" id="fyF-kG-hAX"/>
