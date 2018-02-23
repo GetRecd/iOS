@@ -13,7 +13,9 @@ class SearchViewController: UITableViewController {
     @IBOutlet weak var likeButton: UIButton!
     
     var searchController = UISearchController(searchResultsController: nil)
-    
+    var timerToQueryMusic: Timer?
+    var searchString = ""
+
     /// A `DispatchQueue` used for synchornizing the setting of `mediaItems` to avoid threading issues with various `UITableView` delegate callbacks.
     var setterQueue = DispatchQueue(label: "SearchViewController")
     
@@ -131,11 +133,24 @@ class SearchViewController: UITableViewController {
 }
 
 extension SearchViewController: UISearchResultsUpdating {
+
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchString = searchController.searchBar.text else {
             return
         }
-        
+
+        self.searchString = searchString
+
+        // Check if user is still actively typing... if so, delay the call by one second:
+        if let timer = timerToQueryMusic {
+            timer.invalidate()
+        }
+
+        timerToQueryMusic = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(queryForMusic), userInfo: nil, repeats: false)
+    }
+
+    // Function called after 1 second delay of user typing
+    @objc func queryForMusic() {
         if searchString == "" {
             self.setterQueue.sync {
                 self.songs = []
@@ -146,7 +161,7 @@ extension SearchViewController: UISearchResultsUpdating {
                     self.songs = []
                     return
                 }
-                MusicService.sharedInstance.performAppleMusicCatalogSearch(with: searchString, countryCode: MusicService.sharedInstance.cloudServiceStorefrontCountryCode, completion: { (appleMusicSongs, error) in
+                MusicService.sharedInstance.performAppleMusicCatalogSearch(with: self.searchString, countryCode: MusicService.sharedInstance.cloudServiceStorefrontCountryCode, completion: {(appleMusicSongs, error) in
                     guard error == nil else {
                         self.songs = []
                         return
@@ -158,7 +173,6 @@ extension SearchViewController: UISearchResultsUpdating {
                     self.songs = newResult
                 })
             }
-            
         }
     }
 }
@@ -168,4 +182,3 @@ extension SearchViewController: UISearchBarDelegate {
         self.songs = []
     }
 }
-
