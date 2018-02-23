@@ -53,22 +53,6 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
             return 0
         }
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch indexPath.section {
-        case 1:
-            switch indexPath.row {
-            case 0:
-            case 1:
-                MusicService.sharedInstance.requestAppleCloudServiceAuthorization()
-                MusicService.sharedInstance.requestAppleMediaLibraryAuthorization()
-            default:
-                break
-            }
-        default:
-            break
-        }
-    }
 
     @IBAction func savePressed(_ sender: Any) {
         saveUserInfo()
@@ -113,9 +97,27 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
             }
         }
     }
-    
+
+    // TODO: Clean this code up... merging caused a lot of unclean code
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("CELL SELECTED: \(indexPath.section)")
+
+        // Music Authorization
+        switch indexPath.section {
+        case 1:
+            switch indexPath.row {
+            case 0:
+                break
+            case 1:
+                MusicService.sharedInstance.requestAppleCloudServiceAuthorization()
+                MusicService.sharedInstance.requestAppleMediaLibraryAuthorization()
+            default:
+                break
+            }
+        default:
+            break
+        }
+
         if indexPath.section == 3, indexPath.row == 3 {
             print("LOG OUT PRESSED")
             logOut()
