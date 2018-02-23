@@ -29,7 +29,38 @@ class GetRecdUITests: XCTestCase {
     }
 
     // MARK - Account Sign in Tests
+    func testValidSignIn() {
+        let app = XCUIApplication()
+        app.buttons["SIGN IN"].tap()
 
+        let emailTextField = app.textFields["Email"]
+        emailTextField.tap()
+        emailTextField.typeText("sblatz@purdue.edu")
+
+        let passwordSecureTextField = app.secureTextFields["Password"]
+        passwordSecureTextField.tap()
+        passwordSecureTextField.typeText("password")
+
+        app.buttons["SIGN IN"].tap()
+    }
+
+    func testInvalidSignIn() {
+        let app = XCUIApplication()
+        app.buttons["SIGN IN"].tap()
+
+        let emailTextField = app.textFields["Email"]
+        emailTextField.tap()
+        emailTextField.typeText("sblatz@purdue.edu")
+
+        let passwordSecureTextField = app.secureTextFields["Password"]
+        passwordSecureTextField.tap()
+        passwordSecureTextField.typeText("garbagePassword")
+
+        app.buttons["SIGN IN"].tap()
+
+        let errorLabel = app.staticTexts.element(matching: .any, identifier: "errorLabel").label
+
+    }
     // MARK - Account Creation Tests
 
     // Test error case for an email being taken

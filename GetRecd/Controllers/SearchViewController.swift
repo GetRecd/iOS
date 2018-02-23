@@ -158,6 +158,7 @@ extension SearchViewController: UISearchResultsUpdating {
         } else {
             MusicService.sharedInstance.searchSpotify(with: searchString) { (spotifySongs, error) in
                 guard error == nil else {
+                    print(error)
                     self.songs = []
                     return
                 }

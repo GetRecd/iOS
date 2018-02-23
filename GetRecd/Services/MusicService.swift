@@ -10,6 +10,7 @@ import Foundation
 import StoreKit
 import MediaPlayer
 
+
 class MusicService: NSObject {
     
     static let sharedInstance = MusicService()
