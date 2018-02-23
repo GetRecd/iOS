@@ -72,8 +72,23 @@ class AuthService: NSObject, GIDSignInDelegate {
                         print(error.localizedDescription)
                         return
                     }
-                    self.authInstance = Auth.auth()
-                    controller.performSegue(withIdentifier: "RecFeed", sender: controller)
+                    let graphConnection = GraphRequestConnection()
+                    graphConnection.add(GraphRequest(graphPath: "/me", parameters: ["fields": "email, name, picture"], accessToken: accessToken)) { (httpResponse, result) in
+                        switch result {
+                        case .success(let response):
+                            self.authInstance = Auth.auth()
+                            guard let user = user else {return}
+                            var userData = [String:Any]()
+                            userData["name"] = response.dictionaryValue?["name"]
+                            userData["email"] = response.dictionaryValue?["email"]
+                            userData["profilePictureURL"] = ((response.dictionaryValue?["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String
+                            DataService.instance.createOrUpdateUser(uid: user.uid, userData: userData)
+                            controller.performSegue(withIdentifier: "RecFeed", sender: controller)
+                        case .failed(let error):
+                            print(error)
+                        }
+                    }
+                    graphConnection.start()
                 }
             case .cancelled:
                 print("Cancelled Facebook login.")
