@@ -8,12 +8,14 @@
 
 import UIKit
 import FirebaseStorage
+import SpotifyLogin
 
 class ProfileSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet weak var profilePicture: UIImageView!
     @IBOutlet weak var bioTextView: UITextView!
-    
+    @IBOutlet weak var linkSpotifyButton: UIButton!
+
     var imagePicker: UIImagePickerController!
     var currentUser: User!
     var profilePictureImage: UIImage? = #imageLiteral(resourceName: "profile-pic")
@@ -22,7 +24,11 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
+
+        let button = SpotifyLoginButton(viewController: self, scopes: [.streaming, .userLibraryRead])
+        var cell = linkSpotifyButton.superview?.superview!
+        cell?.addSubview(button)
+        button.frame = linkSpotifyButton.frame
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -32,6 +38,20 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
             self.profilePicture.layer.cornerRadius = self.profilePicture.frame.size.width/2
             self.profilePicture.image = self.profilePictureImage
             self.bioTextView.text = self.currentUser.bio
+        }
+
+
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print("in view will appear")
+        SpotifyLogin.shared.getAccessToken { (accessToken, error) in
+            print(accessToken)
+            print(error)
+            if error != nil {
+                // User is not logged in, show log in flow.
+            }
         }
     }
 

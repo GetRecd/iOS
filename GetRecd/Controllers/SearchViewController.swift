@@ -129,7 +129,6 @@ class SearchViewController: UITableViewController {
         cell.song = song
         return cell
     }
-
 }
 
 extension SearchViewController: UISearchResultsUpdating {

@@ -30,7 +30,7 @@
         <scene sceneID="Mgr-FG-RVC">
             <objects>
                 <tableViewController id="dQe-8a-Qpi" customClass="ProfileViewController" customModule="GetRecd" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" id="gvh-EP-GOQ">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" contentInsetAdjustmentBehavior="never" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" id="gvh-EP-GOQ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -221,7 +221,7 @@
         <scene sceneID="gDy-eF-kDj">
             <objects>
                 <tableViewController id="TxQ-00-8n3" customClass="ProfileSettingsViewController" customModule="GetRecd" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="44" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="ehf-xw-9ya">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" contentInsetAdjustmentBehavior="never" dataMode="static" style="plain" separatorStyle="default" rowHeight="44" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="ehf-xw-9ya">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -363,20 +363,18 @@
                                             <rect key="frame" x="0.0" y="0.0" width="341" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Link Spotify" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NyP-GH-iGY">
-                                                    <rect key="frame" x="16" y="11" width="81" height="21"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="81" id="6hl-ou-SNw"/>
-                                                        <constraint firstAttribute="height" constant="21" id="tQY-Kz-8Jf"/>
-                                                    </constraints>
-                                                    <fontDescription key="fontDescription" name="OpenSans-Regular" family="Open Sans" pointSize="15"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zZy-AI-bXQ">
+                                                    <rect key="frame" x="17" y="0.5" width="307" height="43.5"/>
+                                                    <state key="normal" title="Link Spotify">
+                                                        <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    </state>
+                                                </button>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="NyP-GH-iGY" firstAttribute="centerY" secondItem="kyd-YU-ONV" secondAttribute="centerY" id="0IM-aC-AST"/>
-                                                <constraint firstItem="NyP-GH-iGY" firstAttribute="leading" secondItem="kyd-YU-ONV" secondAttribute="leading" constant="16" id="xcF-c5-Upq"/>
+                                                <constraint firstItem="zZy-AI-bXQ" firstAttribute="height" secondItem="kyd-YU-ONV" secondAttribute="height" id="9ZW-dc-Jf5"/>
+                                                <constraint firstItem="zZy-AI-bXQ" firstAttribute="centerX" secondItem="kyd-YU-ONV" secondAttribute="centerX" id="My2-Kd-rn0"/>
+                                                <constraint firstItem="zZy-AI-bXQ" firstAttribute="width" secondItem="kyd-YU-ONV" secondAttribute="width" multiplier="0.9" id="ZNZ-f0-Q1s"/>
+                                                <constraint firstItem="zZy-AI-bXQ" firstAttribute="centerY" secondItem="kyd-YU-ONV" secondAttribute="centerY" id="eKK-aI-BRx"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -559,6 +557,7 @@
                     </tableView>
                     <connections>
                         <outlet property="bioTextView" destination="L3u-cs-Xci" id="geo-x5-iH3"/>
+                        <outlet property="linkSpotifyButton" destination="zZy-AI-bXQ" id="9Vv-ia-PW5"/>
                         <outlet property="profilePicture" destination="jXx-0H-qQj" id="xz0-IR-Upl"/>
                         <segue destination="kKH-37-Dih" kind="show" identifier="SignIn" id="UKb-bK-7ri"/>
                     </connections>
