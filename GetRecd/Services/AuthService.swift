@@ -39,15 +39,9 @@ class AuthService: NSObject, GIDSignInDelegate {
             self.authInstance = Auth.auth()
             guard let user = user else {return}
             var userData = [String:Any]()
-            if (user.displayName != nil) {
-                userData["name"] = user.displayName!
-            }
-            if (user.email != nil) {
-                userData["email"] = user.email!
-            }
-            if (user.photoURL != nil) {
-                userData["profilePictureURL"] = user.photoURL!.absoluteString
-            }
+            userData["name"] = user.displayName
+            userData["email"] = user.email
+            userData["profilePictureURL"] = user.photoURL?.absoluteString
             DataService.instance.createOrUpdateUser(uid: user.uid, userData: userData)
             DispatchQueue.main.async {
                 let viewController = signIn.uiDelegate as! UIViewController
