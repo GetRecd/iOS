@@ -28,13 +28,18 @@
 			</array>
 		</dict>
 		<dict>
+			<key>CFBundleIdentifier</key>
+			<string></string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cs407.GetRecd</string>
+		</dict>
+		<dict/>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>GetRecd</string>
+				<string>cs407.GetRecd</string>
 			</array>
 		</dict>
 	</array>
@@ -46,6 +51,7 @@
 	<string>GetRecd</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<string>spotify-action</string>
 		<string>fbapi</string>
 		<string>fb-messenger-share-api</string>
 		<string>fbauth2</string>

@@ -78,43 +78,59 @@ class Song: NSObject {
         self.preview = preview["url"] as! String
     }
     
-    init(spotifyData: SPTPartialTrack) throws {
-        
-        
-        guard let artists = spotifyData.artists as? [SPTPartialArtist] else {
-            throw SerializationError.missing("artists")
+    init(spotifyData: [String: Any]) throws {
+        guard let id = spotifyData["id"] as? String else {
+            throw SerializationError.missing("id")
         }
         
-        guard let artist = artists[0] as? SPTPartialArtist else {
+        guard let name = spotifyData["name"] as? String else {
+            throw SerializationError.missing("name")
+        }
+        
+        guard let artists = spotifyData["artists"] as? [[String: Any]] else {
+            throw SerializationError.missing("name")
+        }
+        
+        guard let artist = artists[0] as? [String: Any] else {
             throw SerializationError.missing("artist")
         }
         
-        guard let album = spotifyData.album as? SPTPartialAlbum else {
+        guard let album = spotifyData["album"] as? [String: Any] else {
             throw SerializationError.missing("album")
         }
         
-        guard let images = album.covers as? [SPTImage] else {
+        guard let images = album["images"] as? [[String: Any]] else {
             throw SerializationError.missing("images")
         }
         
-        guard let image = images[0] as? SPTImage else {
+        guard let image = images[0] as? [String: Any] else {
             throw SerializationError.missing("image")
         }
-    
+        
+        guard let width = image["width"] as? Int else {
+            throw SerializationError.missing("width")
+        }
+        
+        guard let height = image["height"] as? Int else {
+            throw SerializationError.missing("height")
+        }
+        
+        
+        guard let artworkUrl = image["url"] as? String else {
+            throw SerializationError.missing("url")
+        }
         
 //        guard let genres = attributes["genreNames"] as? [String] else {
 //            throw SerializationError.missing("genres")
 //        }
         
-        self.id = spotifyData.identifier
-        self.name = spotifyData.name
         self.type = .Spotify
-        self.id = spotifyData.identifier
-        self.name = spotifyData.name
+        self.id = id
+        self.name = name
         //self.genres = genres
-        self.artist = artist.name
+        self.artist = artist["name"] as! String
         
-        self.artwork = image.imageURL.absoluteString
+        self.artwork = artworkUrl
     }
 }
 
