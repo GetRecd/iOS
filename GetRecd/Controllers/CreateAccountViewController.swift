@@ -8,7 +8,6 @@
 
 import UIKit
 import Pastel
-
 class CreateAccountViewController: AuthenticationViewController, UITextFieldDelegate {
 
     @IBOutlet weak var nameView: UIView!
@@ -29,6 +28,7 @@ class CreateAccountViewController: AuthenticationViewController, UITextFieldDele
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(sender:)))
         view.addGestureRecognizer(tap)
 
@@ -139,10 +139,6 @@ class CreateAccountViewController: AuthenticationViewController, UITextFieldDele
         }
     }
     
-    @IBAction func googleSignInButtonPressed(_ sender: Any) {
-        AuthService.instance.googleAuthenticate(forViewController: self)
-    }
-
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == nameTextField {
             emailTextField.becomeFirstResponder()
