@@ -58,7 +58,8 @@
 		FC0AE6FF2026842300E15E0B /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0AE6FE2026842300E15E0B /* User.swift */; };
 		FC1229522036BA640080151B /* Profile.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FC1229512036BA640080151B /* Profile.storyboard */; };
 		FC1229542036BA7E0080151B /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1229532036BA7E0080151B /* ProfileViewController.swift */; };
-		FC46DA7D203BF3840059BEC8 /* RoundedImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC46DA7C203BF3840059BEC8 /* RoundedImageView.swift */; };
+		FC31A5E6206460CE00D73A6A /* ForgotPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC31A5E5206460CE00D73A6A /* ForgotPasswordViewController.swift */; };
+		FC46DA7D203BF3840059BEC8 /* RoundedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC46DA7C203BF3840059BEC8 /* RoundedView.swift */; };
 		FC46DA81203BF3A00059BEC8 /* RecFeed.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FC46DA80203BF3A00059BEC8 /* RecFeed.storyboard */; };
 		FC46DA83203BFE210059BEC8 /* ProfileSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC46DA82203BFE210059BEC8 /* ProfileSettingsViewController.swift */; };
 		FC46DA85203C029E0059BEC8 /* RecFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC46DA84203C029E0059BEC8 /* RecFeedViewController.swift */; };
@@ -116,8 +117,8 @@
 		24E476DF20238D9A00D65361 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = GetRecd/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		4262CAA143F97E5F8C4E9A07 /* Pods-GetRecdTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GetRecdTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GetRecdTests/Pods-GetRecdTests.debug.xcconfig"; sourceTree = "<group>"; };
 		45C527E70A5C82CB269C99D1 /* Pods-GetRecdUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GetRecdUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-GetRecdUITests/Pods-GetRecdUITests.release.xcconfig"; sourceTree = "<group>"; };
-		A16198CB7811E4B353967BF8 /* Pods-GetRecd-GetRecdTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GetRecd-GetRecdTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-GetRecd-GetRecdTests/Pods-GetRecd-GetRecdTests.release.xcconfig"; sourceTree = "<group>"; };
 		5B3B4066203F13FE00AF061E /* AuthenticationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewController.swift; sourceTree = "<group>"; };
+		A16198CB7811E4B353967BF8 /* Pods-GetRecd-GetRecdTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GetRecd-GetRecdTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-GetRecd-GetRecdTests/Pods-GetRecd-GetRecdTests.release.xcconfig"; sourceTree = "<group>"; };
 		A934FAC0B696F03CCF370790 /* Pods_GetRecd.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GetRecd.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF8CBAEF5E3F34C0E56DF4DA /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.info; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C3C136C3B3D671B984FF4611 /* Pods-GetRecd-GetRecdTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GetRecd-GetRecdTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GetRecd-GetRecdTests/Pods-GetRecd-GetRecdTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -128,7 +129,8 @@
 		FC0AE6FE2026842300E15E0B /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		FC1229512036BA640080151B /* Profile.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Profile.storyboard; sourceTree = "<group>"; };
 		FC1229532036BA7E0080151B /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
-		FC46DA7C203BF3840059BEC8 /* RoundedImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedImageView.swift; sourceTree = "<group>"; };
+		FC31A5E5206460CE00D73A6A /* ForgotPasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordViewController.swift; sourceTree = "<group>"; };
+		FC46DA7C203BF3840059BEC8 /* RoundedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedView.swift; sourceTree = "<group>"; };
 		FC46DA80203BF3A00059BEC8 /* RecFeed.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RecFeed.storyboard; sourceTree = "<group>"; };
 		FC46DA82203BFE210059BEC8 /* ProfileSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsViewController.swift; sourceTree = "<group>"; };
 		FC46DA84203C029E0059BEC8 /* RecFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecFeedViewController.swift; sourceTree = "<group>"; };
@@ -252,7 +254,7 @@
 				245156C620238B1A000E8082 /* Main.storyboard */,
 				24065A2C202A6ABC00272A61 /* LaunchScreen.storyboard */,
 				FC1229512036BA640080151B /* Profile.storyboard */,
-				FC46DA7C203BF3840059BEC8 /* RoundedImageView.swift */,
+				FC46DA7C203BF3840059BEC8 /* RoundedView.swift */,
 				FC46DA80203BF3A00059BEC8 /* RecFeed.storyboard */,
 			);
 			path = Views;
@@ -269,6 +271,7 @@
 				FC46DA82203BFE210059BEC8 /* ProfileSettingsViewController.swift */,
 				FC46DA84203C029E0059BEC8 /* RecFeedViewController.swift */,
 				5B3B4066203F13FE00AF061E /* AuthenticationViewController.swift */,
+				FC31A5E5206460CE00D73A6A /* ForgotPasswordViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -701,11 +704,12 @@
 				24270FCE202A533100AC6642 /* NavigationViewController.swift in Sources */,
 				FC0AE6FF2026842300E15E0B /* User.swift in Sources */,
 				FC0AE6FD202681C100E15E0B /* AuthService.swift in Sources */,
-				FC46DA7D203BF3840059BEC8 /* RoundedImageView.swift in Sources */,
+				FC46DA7D203BF3840059BEC8 /* RoundedView.swift in Sources */,
 				FC46DA83203BFE210059BEC8 /* ProfileSettingsViewController.swift in Sources */,
 				FC1229542036BA7E0080151B /* ProfileViewController.swift in Sources */,
 				FCBAF912203E112000DFC323 /* UITextView+Extension.swift in Sources */,
 				5B3B4067203F13FE00AF061E /* AuthenticationViewController.swift in Sources */,
+				FC31A5E6206460CE00D73A6A /* ForgotPasswordViewController.swift in Sources */,
 				245156C320238B1A000E8082 /* AppDelegate.swift in Sources */,
 				FC0AE6FB202681BA00E15E0B /* DataService.swift in Sources */,
 				FC46DA85203C029E0059BEC8 /* RecFeedViewController.swift in Sources */,
