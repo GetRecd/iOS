@@ -29,6 +29,10 @@ class DataService {
         return _REF_PROFILE_PICS
     }
     
+    var REF_USERLIKES: DatabaseReference {
+        return _REF_USERLIKES
+    }
+    
     // Adds/updates user's entry in the Firebase database
     func createOrUpdateUser(uid: String, userData: [String:Any]) {
         REF_USERS.child(uid).updateChildValues(userData)
