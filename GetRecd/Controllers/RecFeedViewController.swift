@@ -12,6 +12,7 @@ import FirebaseAuth
 class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     var currentUser: User?
+    var refresher: UIRefreshControl!
     
     @IBOutlet weak var recFeedTableView: UITableView!
     
@@ -61,6 +62,9 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         recFeedTableView.delegate = self
         recFeedTableView.dataSource = self
+        
+        refresher = UIRefreshControl()
+        recFeedTableView.addSubview(refresher)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -216,6 +220,17 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         DispatchQueue.main.async {
             self.recFeedTableView.reloadData()
         }
+        
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            refresher.addTarget(self, action: #selector(self.getSongs), for: UIControlEvents.valueChanged)
+        case 1:
+            refresher.addTarget(self, action: #selector(self.getMovies), for: UIControlEvents.valueChanged)
+        case 2:
+            refresher.addTarget(self, action: #selector(self.getShows), for: UIControlEvents.valueChanged)
+        default:
+            recFeedTableView.reloadData()
+        }
     }
     
     @IBAction func onAdd(_ sender: Any) {
@@ -239,13 +254,63 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         return true
     }
 
-    func getMovies() {
-        let currUserLikes = DataService.instance.REF_USERLIKES.child(Auth.auth().currentUser!.uid)
-        let movieLikes = currUserLikes.child("Movies")
-        MovieService.sharedInstance.searchTMDB(forMovie: "Star Wars") { (movies, error) in
-            if error == nil, let moviesArr = movies {
-                self.movies = moviesArr
+    @objc func getMovies() {
+        DataService.instance.getLikedMovies { (likedMovies) in
+            
+            // add top 5 recommended movies if they have less than 5 saved movies, else add top 2 if less than 10, else top 1
+            if likedMovies.count < 5 {
+                for id in likedMovies {
+                    MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
+                        for i in 0...4 {
+                            let contains = self.movies.contains(where: { (movie) -> Bool in
+                               return movie.id == movies[i].id
+                            })
+                            
+                            if !contains {
+                                self.movies.append(movies[i])
+                            }
+                        }
+                    })
+                }
+            } else if likedMovies.count < 10 {
+                for id in likedMovies {
+                    MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
+                        for i in 0...1 {
+                            let contains = self.movies.contains(where: { (movie) -> Bool in
+                                return movie.id == movies[i].id
+                            })
+                            
+                            if !contains {
+                                self.movies.append(movies[i])
+                            }
+                        }
+                    })
+                }
+            } else {
+                for id in likedMovies {
+                    MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
+                        let contains = self.movies.contains(where: { (movie) -> Bool in
+                            return movie.id == movies[0].id
+                        })
+                        
+                        if !contains {
+                            self.movies.append(movies[0])
+                        }
+                    })
+                }
             }
+            
+            self.refresher.endRefreshing()
         }
+    }
+    
+    // TODO
+    @objc func getSongs() {
+        
+    }
+    
+    // TODO
+    @objc func getShows() {
+        
     }
 }

@@ -29,10 +29,6 @@ class DataService {
         return _REF_PROFILE_PICS
     }
     
-    var REF_USERLIKES: DatabaseReference {
-        return _REF_USERLIKES
-    }
-    
     // Adds/updates user's entry in the Firebase database
     func createOrUpdateUser(uid: String, userData: [String:Any]) {
         REF_USERS.child(uid).updateChildValues(userData)
@@ -151,7 +147,7 @@ class DataService {
 
     func getLikedMovies(sucesss: @escaping ([(String)]) -> ()) {
         let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
-        currUserLikesRef.observe(.value) { (snapshot) in
+        currUserLikesRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
                 return
             }
@@ -165,7 +161,7 @@ class DataService {
             }
 
             sucesss(result)
-        }
+        })
     }
 
     func likeShows(shows: Set<Int>, success: @escaping () -> ()) {
