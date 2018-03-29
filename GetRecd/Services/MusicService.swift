@@ -614,7 +614,6 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
             if (csp < spotifySongs.count) {
                 spotifyPlayer.playSpotifyURI("spotify:track:\(spotifySongs[csp].id)" , startingWith: 0, startingWithPosition: 0, callback: nil)
                 csp += 1
-                spotifyPlayer.seek(to: 170, callback: nil)
             } else {
                 appleMusicPlayer.play()
             }
