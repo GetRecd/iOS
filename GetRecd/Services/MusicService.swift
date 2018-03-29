@@ -55,8 +55,6 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
                 spotifyPlayer.login(withAccessToken: spotifyAuth.session.accessToken)
                 print(self.spotifyAuth.session.accessToken)
             }
-        } else {
-            authenticateSpotify()
         }
         
     }
@@ -80,6 +78,10 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
     }
     
     func searchSpotify(with term: String, completion: @escaping CatalogSearchCompletionHandler) {
+        if spotifyAuth.session == nil {
+            completion([], nil)
+            return
+        }
         let request = try? SPTSearch.createRequestForSearch(withQuery: term, queryType: .queryTypeTrack, accessToken: spotifyAuth.session.accessToken)
         
         let task = URLSession.shared.dataTask(with: request!) { (data, response, error) in
@@ -299,7 +301,7 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
     var cloudServiceCapabilities = SKCloudServiceCapability()
     
     /// The current set of two letter country code associated with the currently authenticated iTunes Store account.
-    var cloudServiceStorefrontCountryCode = ""
+    var cloudServiceStorefrontCountryCode = "us"
     
     /// The Music User Token associated with the currently signed in iTunes Store account.
     var userToken = ""
