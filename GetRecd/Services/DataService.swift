@@ -13,63 +13,71 @@ import FirebaseStorage
 import FirebaseAuth
 
 class DataService {
-    // Static instance variable used to call DataService functions
+    /** The `DataService` singleton. */
     static let instance = DataService()
+
+    // Firebase Database references.
     private var _REF_USERS = Database.database().reference().child("Users")
-    private var _REF_USERLIKES = Database.database().reference().child("UsersLikes")
+    private var _REF_USERS_LIKES = Database.database().reference().child("UsersLikes")
+    private var _REF_USERS_FRIENDS = Database.database().reference().child("UsersFriends")
+    private var _REF_USERS_SPOTIFY_PLAYLISTS = Database.database().reference().child("UsersSpotifyPlaylists")
 
-    // Firebase Storage reference (TODO: Need to create storage)
+    // Firebase Storage references.
     private var _REF_PROFILE_PICS = Storage.storage().reference().child("profile-pics")
-    private var userSpotifyPlaylistsRef = Database.database().reference().child("userSpotfyPlaylists")
-
-    var REF_USERS: DatabaseReference {
-        return _REF_USERS
-    }
     
     var REF_PROFILE_PICS: StorageReference {
         return _REF_PROFILE_PICS
     }
-    
-    // Adds/updates user's entry in the Firebase database
+
+    /**
+     * Updates a user's entry in the Firebase database, creating one if absent.
+     *
+     * - parameter uid: The user's unique ID.
+     * - parameter userData: A dictionary of user data.
+     */
     func createOrUpdateUser(uid: String, userData: [String:Any]) {
-        REF_USERS.child(uid).updateChildValues(userData)
+        _REF_USERS.child(uid).updateChildValues(userData)
     }
     
-    // Retrives user based on userID/user's key in Firebase
-    func getUser(userID: String,  handler: @escaping (_ user: User) -> ()) {
-        DataService.instance.REF_USERS.child(userID).observeSingleEvent(of: .value, with: { (snapshot) in
-            // Get user value
+    /**
+     * Retrieves a user entry matching the given user ID.
+     *
+     * - parameter uid: The (unique) user ID.
+     * - parameter handler: The handler that will be invoked upon a successful `User` retrieval.
+     */
+    func getUser(uid: String,  handler: @escaping (_ user: User) -> ()) {
+        _REF_USERS.child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
             guard let userDict = snapshot.value as? [String:Any] else {
-                print("ERROR GETTING USER DICT")
+                print("Failed retrieving a user.")
                 return
             }
             
-            let user = User(userDict: userDict, userID: snapshot.key)
-            handler(user)
+            handler(User(userDict: userDict, userID: snapshot.key))
             return
         }) { (error) in
-            print("ERROR \(error.localizedDescription)")
+            print("Failure retrieving a user: \(error.localizedDescription)")
             return
         }
     }
     
-    // Gets a user's profile picture from Firebase Storage
+    /**
+      * Retrieves a user's profile picture.
+      *
+      * - parameter user: The user whose photo is to be retrieved.
+      * - parameter handler: The handler that will be invoked upon a successful `UIImage` retrieval.
+      */
     func getProfilePicture(user: User, handler: @escaping (_ image: UIImage) -> ()) {
         guard let url = URL(string: user.profilePictureURL) else {
             return
         }
         
         let session = URLSession(configuration: .default)
-        
-        //creating a dataTask to get profile picture
         let getImageFromUrl = session.dataTask(with: url) { (data, response, error) in
-            
             if error != nil {
-                //displaying the message
                 print("Error downloading image: \(String(describing: error))")
             } else {
                 guard let _ = response as? HTTPURLResponse else {
-                    print("No response from server")
+                    print("No response from server.")
                     return
                 }
                 
@@ -81,7 +89,7 @@ class DataService {
                     handler(image)
                     return
                 } else {
-                    print("Image file is corrupted")
+                    print("The image file is corrupted.")
                 }
             }
         }
@@ -89,13 +97,39 @@ class DataService {
         getImageFromUrl.resume()
     }
     
+    /**
+      * Deletes a user from the database.
+      *
+      * - parameter uid: The (unique) user ID.
+      */
     func deleteUser(uid: String) {
-        print("DELETING USER: \(uid)")
-        REF_USERS.child(uid).removeValue()
+        print("Deleting user with UID: \(uid)")
+        _REF_USERS.child(uid).removeValue()
+    }
+    
+    /**
+     * Returns an array of `User` objects whose names contain `nameSubstring`.
+     *
+     * - parameter nameSubstring: A substring of a user's name to match.
+     */
+    func findUsersByName(nameSubstring: String) -> [User] {
+        var matchingUsers = [User]()
+        _REF_USERS.queryOrderedByKey().observeSingleEvent(of: .value, with: { (snapshot) in
+            if let userEntries = snapshot.value as? Dictionary<String, AnyObject> {
+                for uid in userEntries.keys {
+                    self.getUser(uid: uid) { (user) in
+                        if user.name.lowercased().contains(nameSubstring.lowercased()) {
+                            matchingUsers.append(user)
+                        }
+                    }
+                }
+            }
+        })
+        return matchingUsers
     }
 
-    func setUserSpotifyPlaylist(uid: String, uri: String, success: @escaping () -> (), failure: @escaping (Error)->()) {
-        userSpotifyPlaylistsRef.child(uid).child("uri").setValue(uri) { (error, ref) in
+    func setUserSpotifyPlaylist(uid: String, uri: String, success: @escaping () -> (), failure: @escaping (Error) -> ()) {
+        _REF_USERS_SPOTIFY_PLAYLISTS.child(uid).child("uri").setValue(uri) { (error, ref) in
             if let error = error {
                 failure(error)
             } else {
@@ -105,14 +139,14 @@ class DataService {
     }
     
     func getUserSpotifyPlaylist(uid: String, success: @escaping (String) -> (), failure: @escaping (Error)->()) {
-        userSpotifyPlaylistsRef.child(uid).child("uri").observe(.value) { (snapshot) in
+        _REF_USERS_SPOTIFY_PLAYLISTS.child(uid).child("uri").observe(.value) { (snapshot) in
             let uri = snapshot.value as! String
             success(uri)
         }
     }
     
     func likeSongs(appleMusicSongs: Set<String>, spotifySongs: Set<String>, success: @escaping () -> (), failure: @escaping (Error) -> ()) {
-        let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
+        let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         let currUserAppleMusicLikesRef = currUserLikesRef.child("AppleMusic")
         let currUserSpotifyLikesRef = currUserLikesRef.child("Spotify")
         
@@ -150,7 +184,7 @@ class DataService {
     }
     
     func getLikedSongs(sucesss: @escaping ([(String, Song.SongType)]) -> ()) {
-        let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
+        let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         
         currUserLikesRef.observe(.value) { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
@@ -175,7 +209,7 @@ class DataService {
     }
 
     func getLikedSpotifySongs(sucesss: @escaping ([String]) -> ()) {
-        let currUserSpotfyLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid).child("Spotify")
+        let currUserSpotfyLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid).child("Spotify")
         
         currUserSpotfyLikesRef.observeSingleEvent(of: .value) { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
@@ -193,7 +227,7 @@ class DataService {
     }
     
     func likeMovies(movies: Set<Int>, success: @escaping () -> ()) {
-        let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
+        let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         let currentUserMovieLikesRef = currUserLikesRef.child("Movies")
 
         for movie in movies {
@@ -204,7 +238,7 @@ class DataService {
     }
 
     func getLikedMovies(sucesss: @escaping ([(String)]) -> ()) {
-        let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
+        let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         currUserLikesRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
                 return
@@ -223,7 +257,7 @@ class DataService {
     }
 
     func likeShows(shows: Set<Int>, success: @escaping () -> ()) {
-        let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
+        let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         let currentUserShowLikes = currUserLikesRef.child("Shows")
 
         for show in shows {
@@ -234,7 +268,7 @@ class DataService {
     }
 
     func getLikedShows(sucesss: @escaping ([(String)]) -> ()) {
-        let currUserLikesRef = _REF_USERLIKES.child(Auth.auth().currentUser!.uid)
+        let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         currUserLikesRef.observe(.value) { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
                 return
