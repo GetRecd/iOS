@@ -310,7 +310,8 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         var newSongs: [Song] = []
         songSearchGroup.enter()
         MusicService.sharedInstance.getSpotifyRecommendations { (spotifySongs, error) in
-            if error != nil {
+            if let error = error {
+                print(error.localizedDescription)
                 self.songs = []
                 self.refresher.endRefreshing()
                 return
@@ -320,6 +321,18 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         
+        songSearchGroup.enter()
+        MusicService.sharedInstance.getAppleMusicRecommendations { (appleMusicSongs, error) in
+            if let error = error {
+                print(error.localizedDescription)
+                self.songs = []
+                self.refresher.endRefreshing()
+                return
+            } else {
+                newSongs.append(contentsOf: appleMusicSongs)
+                songSearchGroup.leave()
+            }
+        }
         
         songSearchGroup.notify(queue: DispatchQueue.global()) {
             newSongs.sort(by: { (first, second) -> Bool in

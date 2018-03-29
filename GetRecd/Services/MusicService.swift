@@ -29,6 +29,7 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
         spotifyAuth.tokenRefreshURL = URL(string: "https://getrecdspotifyrefresher.herokuapp.com/refresh")
         spotifyAuth.requestedScopes = [SPTAuthStreamingScope, SPTAuthPlaylistModifyPrivateScope, SPTAuthPlaylistModifyPublicScope, SPTAuthPlaylistReadPrivateScope]
         spotifyPlayer.delegate = self
+        spotifyPlayer.playbackDelegate = self
         
         do {
             try spotifyPlayer.start(withClientId: MusicService.sharedInstance.spotifyAuth.clientID)
@@ -209,7 +210,7 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
     }
     
     func testSpotify(id: String) {
-        player.stop()
+        appleMusicPlayer.stop()
         spotifyPlayer.playSpotifyURI("spotify:track:\(id)" , startingWith: 0, startingWithPosition: 0) { (error) in
             if let error = error {
                 print(error)
@@ -312,6 +313,8 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
     /// The completion handler that is called when an Apple Music Get User Storefront API call completes.
     typealias GetUserStorefrontCompletionHandler = (_ storefront: String?, _ error: Error?) -> Void
     
+    let appleMusicPlayer = MPMusicPlayerController.applicationMusicPlayer
+    
     /// The instance of `URLSession` that is going to be used for making network calls.
     lazy var urlSession: URLSession = {
         // Configure the `URLSession` instance that is going to be used for making network calls.
@@ -325,6 +328,8 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
     }
     
     func setupAppleMusic() {
+        
+        appleMusicPlayer.beginGeneratingPlaybackNotifications()
         if SKCloudServiceController.authorizationStatus() == .authorized {
             if let token = UserDefaults.standard.string(forKey: MusicService.userTokenUserDefaultsKey) {
                 userToken = token
@@ -522,14 +527,104 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
         
         task.resume()
     }
-   let player = MPMusicPlayerController.applicationMusicPlayer
+    
+    func getAppleMusicRecommendations(completion: @escaping CatalogSearchCompletionHandler) {
+        
+        let developerToken = fetchAppleMusicDeveloperToken()
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "https"
+        urlComponents.host = MusicService.appleMusicAPIBaseURLString
+        urlComponents.path = "/v1/me/recommendations"
+        
+        // Create and configure the `URLRequest`.
+        
+        var urlRequest = URLRequest(url: urlComponents.url!)
+        urlRequest.httpMethod = "GET"
+        
+        urlRequest.addValue("Bearer \(developerToken)", forHTTPHeaderField: "Authorization")
+        urlRequest.addValue(userToken, forHTTPHeaderField: "Music-User-Token")
+        
+        let task = urlSession.dataTask(with: urlRequest) { (data, response, error) in
+            guard error == nil, let urlResponse = response as? HTTPURLResponse, urlResponse.statusCode == 200 else {
+                return
+            }
+            
+            do {
+                let json = try! JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
+                let data = json["data"] as! [[String: Any]]
+                let newReleases = data[4]
+                let relationships = newReleases["relationships"] as! [String: Any]
+                let contents = relationships["contents"] as! [String: Any]
+                let insideData = contents["data"] as! [[String: Any]]
+                 var songResult = [Song]()
+                for songData in insideData {
+                    print(songData["attributes"])
+                    songResult.append(try Song(appleMusicData: songData))
+                }
+                completion(songResult, nil)
+            } catch {
+                fatalError("An error occurred: \(error.localizedDescription)")
+            }
+        }
+        
+        task.resume()
+    }
+    
+   
     func testAppleMusic(id: String) {
         
         let catalogQueueDescriptor = MPMusicPlayerStoreQueueDescriptor(storeIDs: [id])
-        player.setQueue(with: catalogQueueDescriptor)
         
-        player.play()
+        
+        appleMusicPlayer.setQueue(with: catalogQueueDescriptor)
+        appleMusicPlayer.play()
+        self.appleMusicPlayer.beginGeneratingPlaybackNotifications()
     }
-
+    
+    var spotifySongs: [(id: String, type: Song.SongType)] = []
+    var csp = 0
+    var currId: UInt64?
+    func playListOfSong(songIds: [(id: String, type: Song.SongType)]) {
+        let appleMusicSongs = songIds.filter { (song) -> Bool in
+            return song.type == .AppleMusic
+        }
+        
+        spotifySongs = songIds.filter { (song) -> Bool in
+            return song.type == .Spotify
+        }
+        
+        csp = 0
+        
+        let catalogQueueDescriptor = MPMusicPlayerStoreQueueDescriptor(storeIDs: [])
+        
+        for song in appleMusicSongs {
+            catalogQueueDescriptor.storeIDs?.append(song.id)
+        }
+        
+        appleMusicPlayer.setQueue(with: catalogQueueDescriptor)
+        appleMusicPlayer.play()
+        currId = appleMusicPlayer.nowPlayingItem?.persistentID
+        NotificationCenter.default.addObserver(self, selector: #selector(switchToSpotify), name: .MPMusicPlayerControllerNowPlayingItemDidChange, object: nil)
+        
+    }
+    
+    @objc func switchToSpotify() {
+        if appleMusicPlayer.nowPlayingItem?.persistentID != currId {
+            appleMusicPlayer.stop()
+            if (csp < spotifySongs.count) {
+                spotifyPlayer.playSpotifyURI("spotify:track:\(spotifySongs[csp].id)" , startingWith: 0, startingWithPosition: 0, callback: nil)
+                csp += 1
+                spotifyPlayer.seek(to: 170, callback: nil)
+            } else {
+                appleMusicPlayer.play()
+            }
+        }
+    }
 }
 
+extension MusicService: SPTAudioStreamingPlaybackDelegate {
+    func audioStreaming(_ audioStreaming: SPTAudioStreamingController!, didStopPlayingTrack trackUri: String!) {
+        appleMusicPlayer.play()
+        currId = appleMusicPlayer.nowPlayingItem?.persistentID
+    }
+}
