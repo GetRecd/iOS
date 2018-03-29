@@ -265,75 +265,32 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             // add top 5 recommended movies if they have less than 5 saved movies, else add top 2 if less than 10, else top 1
             // Checks to make sure that reccomended movies aren't shown more than once and that user has not already liked them
-            if likedMovies.count < 5 {
-                for id in likedMovies {
-                    MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
-                        for i in 0...movies.count-1 {
-                            
-                            let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
-                               return movie.id == movies[i].id
-                            })
-                            
-                            let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
-                                return Int(id) == movies[i].id
-                            })
-                            
-                            if !movieArrcontains && !likedArrContains {
-                                self.movies.append(movies[i])
-                            }
-                            
-                            if self.movies.count == 5 {
-                                break
-                            }
+            
+            for id in likedMovies {
+                MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
+                    for i in 0...movies.count-1 {
+                        
+                        let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
+                            return movie.id == movies[i].id
+                        })
+                        
+                        let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
+                            return Int(id) == movies[i].id
+                        })
+                        
+                        if !movieArrcontains && !likedArrContains {
+                            self.movies.append(movies[i])
                         }
-                    })
-                }
-            } else if likedMovies.count < 10 {
-                for id in likedMovies {
-                    MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
-                        for i in 0...movies.count-1 {
-                            
-                            let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
-                                return movie.id == movies[i].id
-                            })
-                            
-                            let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
-                                return Int(id) == movies[i].id
-                            })
-                            
-                            if !movieArrcontains && !likedArrContains {
-                                self.movies.append(movies[i])
-                            }
-                            
-                            if self.movies.count == 2 {
+                        
+                        if likedMovies.count < 5, self.movies.count == 5 {
                                 break
-                            }
-                        }
-                    })
-                }
-            } else {
-                for id in likedMovies {
-                    MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
-                        for i in 0...movies.count-1 {
-                            
-                            let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
-                                return movie.id == movies[i].id
-                            })
-                            
-                            let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
-                                return Int(id) == movies[i].id
-                            })
-                            
-                            if !movieArrcontains && !likedArrContains {
-                                self.movies.append(movies[i])
-                            }
-                            
-                            if self.movies.count == 1 {
+                        } else if likedMovies.count < 10, self.movies.count == 2 {
                                 break
-                            }
+                        } else if self.movies.count == 1 {
+                            break
                         }
-                    })
-                }
+                    }
+                })
             }
             
             self.refresher.endRefreshing()
