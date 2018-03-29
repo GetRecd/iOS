@@ -219,7 +219,19 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
             var recommendURLComponents = URLComponents(string: "https://api.spotify.com/v1/recommendations")
             var tracksString = ""
             if songs.count > 5 {
-                
+                var used = Set<Int>()
+                for _ in 0...4 {
+                    var index = Int(arc4random_uniform(UInt32(songs.count)))
+                    while used.contains(index) {
+                        index = Int(arc4random_uniform(UInt32(songs.count)))
+                    }
+                    if (tracksString == "") {
+                        tracksString.append(songs[index])
+                    } else {
+                        tracksString.append(",\(songs[index])")
+                    }
+                    
+                }
             } else {
                 for song in songs {
                     if (tracksString == "") {
@@ -232,7 +244,6 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
             recommendURLComponents?.queryItems = [URLQueryItem(name: "seed_tracks", value: tracksString)]
             let recommendURL = recommendURLComponents!.url!
             var recommendRequest = URLRequest(url: recommendURL)
-            print(self.spotifyAuth.session.accessToken!)
             recommendRequest.addValue("Bearer \(self.spotifyAuth.session.accessToken!)", forHTTPHeaderField: "Authorization")
             print(recommendRequest)
             let recommendSession = URLSession(configuration: .default)
