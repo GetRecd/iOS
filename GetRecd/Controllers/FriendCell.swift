@@ -26,7 +26,7 @@ class FriendCell: UITableViewCell {
     }
     
     func configureCell(user: User) {
-        DataService.instance.getUser(userID: user.userID) { (user) in
+        DataService.instance.getUser(uid: user.userID) { (user) in
             self.nameLabel.text = user.name
         }
         
