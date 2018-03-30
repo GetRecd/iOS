@@ -51,11 +51,9 @@ class SearchViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         searchController.searchResultsUpdater = self
         searchController.dimsBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
-
         definesPresentationContext = true
 
         searchController.searchBar.scopeButtonTitles = ["Music", "Movies", "Shows"]
@@ -82,9 +80,12 @@ class SearchViewController: UITableViewController {
         self.selectedScope = selectedScope
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        SongCell.currPlaying = -1
+    }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         searchController.becomeFirstResponder()
     }
     
@@ -93,18 +94,14 @@ class SearchViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func onArtTap(_ sender: Any) {
-        let gesture = sender as! UITapGestureRecognizer
-        let cell = gesture.view!.superview!.superview as! SongCell
-        
-        //MusicService.sharedInstance.playPreview(url: cell.song.preview)
-    }
-    
     @IBAction func onAdd(_ sender: Any) {
         switch selectedScope {
         case 0:
             DataService.instance.likeSongs(appleMusicSongs: likedAppleMusicSongs, spotifySongs: likedSpotifySongs, success: {
-            })
+                print("Yay")
+            }) { (error) in
+                print(error.localizedDescription)
+            }
         case 1:
             DataService.instance.likeMovies(movies: likedMovies, success: {
             })
@@ -219,12 +216,8 @@ class SearchViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "SongCell", for: indexPath) as! SongCell
 
                 // Reset the cell from previous use:
-                cell.artistLabel.text = ""
-                cell.artworkView.image = UIImage()
-                cell.nameLabel.text = ""
-
                 cell.tag = indexPath.row
-                cell.artworkView.tag = indexPath.row
+                
                 let song = songs[indexPath.row]
                 cell.song = song
                 return cell
@@ -289,23 +282,38 @@ extension SearchViewController: UISearchResultsUpdating {
                     self.songs = []
                 }
             } else {
+                let songSearchGroup = DispatchGroup()
+                var newSongs: [Song] = []
+                songSearchGroup.enter()
                 MusicService.sharedInstance.searchSpotify(with: searchString) { (spotifySongs, error) in
-                    guard error == nil else {
-                        print(error)
+                    if error != nil {
                         self.songs = []
                         return
+                    } else {
+                        newSongs.append(contentsOf: spotifySongs)
+                        songSearchGroup.leave()
                     }
-                    MusicService.sharedInstance.performAppleMusicCatalogSearch(with: self.searchString, countryCode: MusicService.sharedInstance.cloudServiceStorefrontCountryCode, completion: {(appleMusicSongs, error) in
-                        guard error == nil else {
-                            self.songs = []
-                            return
-                        }
-                        var newResult = appleMusicSongs + spotifySongs
-                        newResult.sort(by: { (first, second) -> Bool in
-                            return first.name < second.name
-                        })
-                        self.songs = newResult
+                }
+                
+                songSearchGroup.enter()
+                
+                MusicService.sharedInstance.performAppleMusicCatalogSearch(with: self.searchString, countryCode: MusicService.sharedInstance.cloudServiceStorefrontCountryCode, completion: {(appleMusicSongs, error) in
+                    if error != nil {
+                        self.songs = []
+                        return
+                    } else {
+                        newSongs.append(contentsOf: appleMusicSongs)
+                        songSearchGroup.leave()
+                    }
+                    
+                })
+                
+                songSearchGroup.notify(queue: DispatchQueue.global()) {
+                    newSongs.sort(by: { (first, second) -> Bool in
+                        return first.name < second.name
                     })
+                    
+                    self.songs = newSongs
                 }
             }
         case 1:

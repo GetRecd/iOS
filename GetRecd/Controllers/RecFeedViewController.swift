@@ -58,6 +58,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         getCurrentUser()
         
+        getSongs()
         getMovies()
         
         recFeedTableView.delegate = self
@@ -69,12 +70,13 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        SongCell.currPlaying = -1
         getCurrentUser()
     }
     
     func getCurrentUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        DataService.instance.getUser(userID: uid) { (user) in
+        DataService.instance.getUser(uid: uid) { (user) in
             self.currentUser = user
         }
     }
@@ -94,20 +96,19 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch segmentedControl.selectedSegmentIndex {
-            case 0:
+        case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "SongCell", for: indexPath) as! SongCell
             
             // Reset the cell from previous use:
             cell.artistLabel.text = ""
             cell.artworkView.image = UIImage()
             cell.nameLabel.text = ""
-            
             cell.tag = indexPath.row
             cell.artworkView.tag = indexPath.row
             let song = songs[indexPath.row]
             cell.song = song
             return cell
-            case 1:
+        case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
             
             // Reset the cell from previous use:
@@ -120,7 +121,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             let movie = movies[indexPath.row]
             cell.movie = movie
             return cell
-            case 2:
+        case 2:
             // Note: we're using a movie cell as a tv show cell as well for efficiency 😄
             let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
             
@@ -134,7 +135,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             let show = shows[indexPath.row]
             cell.show = show
             return cell
-            default:
+        default:
             return UITableViewCell()
         }
     }
@@ -223,13 +224,15 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         switch segmentedControl.selectedSegmentIndex {
         case 0:
-            refresher.addTarget(self, action: #selector(self.getSongs), for: UIControlEvents.valueChanged)
+            refresher.addTarget(self, action: #selector(getSongs), for: UIControlEvents.valueChanged)
         case 1:
-            refresher.addTarget(self, action: #selector(self.getMovies), for: UIControlEvents.valueChanged)
+            refresher.addTarget(self, action: #selector(getMovies), for: UIControlEvents.valueChanged)
         case 2:
-            refresher.addTarget(self, action: #selector(self.getShows), for: UIControlEvents.valueChanged)
+            refresher.addTarget(self, action: #selector(getShows), for: UIControlEvents.valueChanged)
         default:
-            recFeedTableView.reloadData()
+            DispatchQueue.main.async {
+                self.recFeedTableView.reloadData()
+            }
         }
     }
     
@@ -237,7 +240,10 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         switch segmentedControl.selectedSegmentIndex {
         case 0:
             DataService.instance.likeSongs(appleMusicSongs: likedAppleMusicSongs, spotifySongs: likedSpotifySongs, success: {
-            })
+                print("Yay")
+            }) { (error) in
+                print(error.localizedDescription)
+            }
         case 1:
             DataService.instance.likeMovies(movies: likedMovies, success: {
             })
@@ -283,9 +289,9 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                         
                         if likedMovies.count < 5, self.movies.count == 5 {
-                                break
+                            break
                         } else if likedMovies.count < 10, self.movies.count == 2 {
-                                break
+                            break
                         } else if self.movies.count == 1 {
                             break
                         }
@@ -297,13 +303,87 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // TODO
     @objc func getSongs() {
+        print("triggering")
+        let songSearchGroup = DispatchGroup()
+        var newSongs: [Song] = []
+        songSearchGroup.enter()
+        MusicService.sharedInstance.getSpotifyRecommendations { (spotifySongs, error) in
+            if let error = error {
+                print(error.localizedDescription)
+                self.songs = []
+                self.refresher.endRefreshing()
+                return
+            } else {
+                newSongs.append(contentsOf: spotifySongs)
+                songSearchGroup.leave()
+            }
+        }
         
+        songSearchGroup.enter()
+        MusicService.sharedInstance.getAppleMusicRecommendations { (appleMusicSongs, error) in
+            if let error = error {
+                print(error.localizedDescription)
+                self.songs = []
+                self.refresher.endRefreshing()
+                return
+            } else {
+                newSongs.append(contentsOf: appleMusicSongs)
+                songSearchGroup.leave()
+            }
+        }
+        
+        songSearchGroup.notify(queue: DispatchQueue.global()) {
+            newSongs.sort(by: { (first, second) -> Bool in
+                return first.name < second.name
+            })
+            DispatchQueue.main.async {
+                self.refresher.endRefreshing()
+            }
+            self.songs = newSongs
+        }
     }
     
-    // TODO
     @objc func getShows() {
-        
+        DataService.instance.getLikedShows { (likedShows) in
+            self.shows = []
+
+            for cell in self.recFeedTableView.visibleCells {
+                cell.accessoryType = .none
+                self.likeButton.isHidden = true
+            }
+
+            // add top 5 recommended shows if they have less than 5 saved movies, else add top 2 if less than 10, else top 1
+            // Checks to make sure that reccomended shows aren't shown more than once and that user has not already liked them
+
+            for id in likedShows {
+                TVService.sharedInstance.getRecommendedTV(id: id, success: { (shows) in
+                    for i in 0...shows.count-1 {
+
+                        let showArrcontains = self.shows.contains(where: { (show) -> Bool in
+                            return show.id == shows[i].id
+                        })
+
+                        let likedArrContains = likedShows.contains(where: { (id) -> Bool in
+                            return Int(id) == shows[i].id
+                        })
+
+                        if !showArrcontains && !likedArrContains {
+                            self.shows.append(shows[i])
+                        }
+
+                        if likedShows.count < 5, self.shows.count == 5 {
+                            break
+                        } else if likedShows.count < 10, self.shows.count == 2 {
+                            break
+                        } else if self.shows.count == 1 {
+                            break
+                        }
+                    }
+                })
+
+                self.refresher.endRefreshing()
+            }
+        }
     }
 }
