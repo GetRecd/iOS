@@ -11,8 +11,11 @@ import UIKit
 class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var addButton: UIButton!
+    @IBOutlet weak var denyButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    var refresher: UIRefreshControl!
     
     var searchController = UISearchController(searchResultsController: nil)
     var timerToQuery: Timer?
@@ -45,7 +48,7 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    var addedFriends = Set<String>()
+    var selectedFriends = Set<String>()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,6 +57,7 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.dataSource = self
         
         addButton.isHidden = true
+        denyButton.isHidden = true
         
         searchController.searchResultsUpdater = self
         searchController.dimsBackgroundDuringPresentation = false
@@ -65,6 +69,12 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.definesPresentationContext = true
         self.navigationItem.searchController = searchController
         view.layoutIfNeeded()
+        
+        getFriends()
+        getRequests()
+        
+        refresher = UIRefreshControl()
+        tableView.addSubview(refresher)
     }
 
     override func didReceiveMemoryWarning() {
@@ -101,6 +111,9 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath) as? FriendCell else { return FriendCell() }
         
         var arr:[User] = []
+        
+        cell.accessoryType = .none
+        
         // Configure the cell...
         switch segmentedControl.selectedSegmentIndex {
         case 0:
@@ -118,6 +131,51 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         return cell
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch segmentedControl.selectedSegmentIndex {
+        case 1:
+            if let cell = tableView.cellForRow(at: indexPath) as? FriendCell {
+                
+                if cell.accessoryType == .checkmark {
+                    cell.accessoryType = .none
+                    selectedFriends.remove(cell.user.userID)
+                } else {
+                    cell.accessoryType = .checkmark
+                    selectedFriends.insert(cell.user.userID)
+                }
+            }
+            
+            if selectedFriends.count > 0 {
+                addButton.isHidden = false
+            } else {
+                addButton.isHidden = true
+            }
+            
+            tableView.deselectRow(at: indexPath, animated: true)
+        case 2:
+            if let cell = tableView.cellForRow(at: indexPath) as? FriendCell {
+                
+                if cell.accessoryType == .checkmark {
+                    cell.accessoryType = .none
+                    selectedFriends.remove(cell.user.userID)
+                } else {
+                    cell.accessoryType = .checkmark
+                    selectedFriends.insert(cell.user.userID)
+                }
+            }
+            
+            if selectedFriends.count > 0 {
+                addButton.isHidden = false
+                denyButton.isHidden = false
+            } else {
+                addButton.isHidden = true
+                denyButton.isHidden = true
+            }
+        default:
+            return
+        }
+    }
+    
     @IBAction func didChangeSegment(_ sender: Any) {
         
         DispatchQueue.main.async {
@@ -127,18 +185,98 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         switch segmentedControl.selectedSegmentIndex {
         case 0:
             addButton.isHidden = true
+            denyButton.isHidden = true
             searchController.searchBar.isHidden = false
+            refresher.isHidden = false
+            refresher.addTarget(self, action: #selector(getFriends), for: UIControlEvents.valueChanged)
         case 1:
             addButton.isHidden = false
             searchController.searchBar.isHidden = false
+            refresher.isHidden = true
+            denyButton.isHidden = true
         case 2:
             searchController.searchBar.isHidden = true
-            addButton.isHidden = true
+            refresher.isHidden = false
+            refresher.addTarget(self, action: #selector(getRequests), for: UIControlEvents.valueChanged)
         default:
             addButton.isHidden = true
+            refresher.isHidden = false
+            denyButton.isHidden = true
             searchController.searchBar.isHidden = false
         }
     }
+    
+    @objc func getFriends() {
+        DataService.instance.getFriends { (friends) in
+            for uid in friends {
+                DataService.instance.getUser(uid: uid, handler: { (user) in
+                    self.friends.append(user)
+                })
+            }
+        }
+        
+        DispatchQueue.main.async {
+            self.refresher.endRefreshing()
+        }
+    }
+    
+    @objc func getRequests() {
+        DataService.instance.getIncomingFriendRequests { (requests) in
+            for uid in requests {
+                DataService.instance.getUser(uid: uid, handler: { (user) in
+                    self.requests.append(user)
+                })
+            }
+        }
+        
+        DispatchQueue.main.async {
+            self.refresher.endRefreshing()
+        }
+    }
+    
+    @IBAction func onAddPressed(_ sender: Any) {
+        addFriends()
+    }
+    
+    func addFriends() {
+        switch segmentedControl.selectedSegmentIndex {
+        case 1:
+            for uid in selectedFriends {
+                DataService.instance.requestFriend(friendUid: uid)
+            }
+            
+        case 2:
+            for uid in selectedFriends {
+                DataService.instance.respondFriendRequest(requesterUid: uid, accept: true)
+            }
+            
+            /*for cell in tableView.visibleCells {
+                if cell.accessoryType == .checkmark {
+                    tableView.deleteRows(at: [tableView.indexPath(for: cell)!], with: .automatic)
+                }
+            }*/
+        default:
+            return
+        }
+    }
+    
+    @IBAction func denyPressed(_ sender: Any) {
+        for uid in selectedFriends {
+            DataService.instance.respondFriendRequest(requesterUid: uid, accept: false)
+        }
+        
+        DispatchQueue.main.async {
+            self.refresher.endRefreshing()
+        }
+        
+        /*for cell in tableView.visibleCells {
+            if cell.accessoryType == .checkmark {
+                tableView.deleteRows(at: [tableView.indexPath(for: cell)!], with: .automatic)
+            }
+        }*/
+        
+    }
+    
 }
 
 extension FriendsViewController: UISearchResultsUpdating {
@@ -170,6 +308,12 @@ extension FriendsViewController: UISearchResultsUpdating {
                 }
             } else {
                 // Get friends from DataService and set friends array to results using searchString
+                self.friends = []
+                for friend in self.friends {
+                    if friend.name.lowercased().hasPrefix(searchString.lowercased()) {
+                        self.friends.append(friend)
+                    }
+                }
             }
         case 1:
             if searchString == "" {
@@ -177,7 +321,17 @@ extension FriendsViewController: UISearchResultsUpdating {
                     self.findFriends = []
                 }
             } else {
+                self.findFriends = []
                // Search all users using searchString and set searchResults array
+                DataService.instance.getAllUsers(handler: { (users) in
+                    for uid in users {
+                        DataService.instance.getUser(uid: uid, handler: { (user) in
+                            if user.name.lowercased().hasPrefix(self.searchString.lowercased()) {
+                                self.findFriends.append(user)
+                            }
+                        })
+                    }
+                })
             }
         default:
             break
@@ -187,7 +341,7 @@ extension FriendsViewController: UISearchResultsUpdating {
 
 extension FriendsViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        self.friends = []
+        getFriends()
         self.findFriends = []
         self.addButton.isHidden = true
     }

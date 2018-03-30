@@ -109,13 +109,13 @@ class DataService {
     }
     
     /**
-     * Returns an array of `User` objects whose names contain `nameSubstring`. The users are
+     * Returns an array of all `User` objects. The users are
      * supplied to the callback handler.
      *
-     * - parameter nameSubstring: A substring of a user's name to match.
-     * - parameter handler: The callback handler that will be invoked with the matching user IDs.
+     *
+     * - parameter handler: The callback handler that will be invoked with all the user IDs.
      */
-    func findUsersByName(nameSubstring: String, handler: @escaping (_ matchingUsers: [String]) -> ()) {
+    func getAllUsers(handler: @escaping (_ matchingUsers: [String]) -> ()) {
         _REF_USERS.queryOrderedByKey().observeSingleEvent(of: .value, with: { (snapshot) in
             var matchingUsers = [String]()
             if let userEntries = snapshot.value as? Dictionary<String, AnyObject> {
@@ -369,7 +369,7 @@ class DataService {
 
         success()
     }
-
+    
     func getLikedMovies(sucesss: @escaping ([(String)]) -> ()) {
         let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         currUserLikesRef.observeSingleEvent(of: .value, with: { (snapshot) in
