@@ -274,7 +274,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             for id in likedMovies {
                 MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
-                    for i in 0...movies.count-1 {
+                    for i in 0..<movies.count {
                         
                         let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
                             return movie.id == movies[i].id
@@ -360,7 +360,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
 
             for id in likedShows {
                 TVService.sharedInstance.getRecommendedTV(id: id, success: { (shows) in
-                    for i in 0...shows.count-1 {
+                    for i in 0..<shows.count {
 
                         let showArrcontains = self.shows.contains(where: { (show) -> Bool in
                             return show.id == shows[i].id
