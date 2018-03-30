@@ -333,7 +333,7 @@ class DataService {
     func getLikedSongs(sucesss: @escaping ([(String, Song.SongType)]) -> ()) {
         let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
         
-        currUserLikesRef.observe(.value) { (snapshot) in
+        currUserLikesRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
                 return
             }
@@ -352,7 +352,7 @@ class DataService {
             }
             
             sucesss(result)
-        }
+        })
     }
 
     func getLikedSpotifySongs(sucesss: @escaping ([String]) -> ()) {
@@ -416,7 +416,7 @@ class DataService {
 
     func getLikedShows(sucesss: @escaping ([(String)]) -> ()) {
         let currUserLikesRef = _REF_USERS_LIKES.child(Auth.auth().currentUser!.uid)
-        currUserLikesRef.observe(.value) { (snapshot) in
+        currUserLikesRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let data = snapshot.value as? [String: Any] else {
                 return
             }
@@ -430,6 +430,6 @@ class DataService {
             }
 
             sucesss(result)
-        }
+        })
     }
 }

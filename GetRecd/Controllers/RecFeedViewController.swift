@@ -297,9 +297,11 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                     }
                 })
+                
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
             }
-            
-            self.refresher.endRefreshing()
         }
     }
     
@@ -381,8 +383,10 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                     }
                 })
-
-                self.refresher.endRefreshing()
+                
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
             }
         }
     }
