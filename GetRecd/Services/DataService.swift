@@ -288,6 +288,7 @@ class DataService {
      */
     func respondFriendRequest(uid: String, friendUid: String, accept: Bool, success: @escaping () -> (), failure: @escaping (Error) -> ()) {
         let userFriendsDoc = userFriendsCollection.document(uid)
+        let friendFriendDoc = userFriendsCollection.document(friendUid)
         let userPendingFriendsDoc = pendingFriendsCollection.document(uid)
         
         db.runTransaction({ (transaction, errorPointer) -> Any? in
@@ -301,6 +302,7 @@ class DataService {
             
             if accept {
                 transaction.setData([friendUid: true], forDocument: userFriendsDoc)
+                transaction.setData([uid: true], forDocument: friendFriendDoc)
             }
             var pendingFriends = userPendingFriendsSnapshot.data() ?? [String: Any]()
             pendingFriends[friendUid] = nil
