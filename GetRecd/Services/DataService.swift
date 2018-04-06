@@ -385,7 +385,6 @@ class DataService {
                     userAPLikes[song] = true
                 }
                 
-                
                 transaction.setData(userAPLikes, forDocument: userAppleMusicLikes)
                 return nil
             }
