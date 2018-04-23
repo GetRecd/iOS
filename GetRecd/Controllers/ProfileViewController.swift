@@ -109,6 +109,6 @@ class ProfileViewController: UITableViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        self.navigationController?.setNavigationBarHidden(false, animated: true)
+       
     }
 }

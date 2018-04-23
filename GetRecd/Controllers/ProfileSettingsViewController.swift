@@ -8,8 +8,9 @@
 
 import UIKit
 import FirebaseAuth
+import MessageUI
 
-class ProfileSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate {
+class ProfileSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate, MFMailComposeViewControllerDelegate {
 
     @IBOutlet weak var profilePicture: UIImageView!
     @IBOutlet weak var bioTextView: UITextView!
@@ -25,34 +26,24 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+
         self.navigationItem.hidesBackButton = true
-//        let banner = UIImage(named: "launch-bg")
-//        let imageView = UIImageView(image: banner)
-//        var bannerWidth = navigationController?.navigationBar.frame.size.width
-//        var bannerHeight = navigationController?.navigationBar.frame.size.height
-//        var bannerx = bannerWidth! / 2 - banner!.size.width / 2
-//        var bannery = bannerHeight! / 2 - banner!.size.height / 2
-//        imageView.frame = CGRect(x: bannerx, y: bannery, width: bannerWidth!, height: bannerHeight!)
-//        imageView.contentMode = UIViewContentMode.scaleAspectFit
-//        self.navigationItem.titleView = imageView
-//        let navbarImage = UIImage(named: "launch-bg")
-//        let navImageView = UIImageView(frame: navigationController!.navigationBar.frame)
-//        navImageView.image = navbarImage
-//        //self.navigationController?.navigationBar.setBackgroundImage(navbarImage, for: .default)
-//        navigationController?.navigationItem.titleView = navImageView
         
-        self.edgesForExtendedLayout = UIRectEdge()
-        self.extendedLayoutIncludesOpaqueBars = false
-        self.automaticallyAdjustsScrollViewInsets = false
-                self.view.addSubview(navbarCell)
+        
+        let saveButton = UIButton(type: .custom)
+        saveButton.frame = CGRect(x: 0.0, y: 0.0, width: 35, height: 35)
+        saveButton.setImage(UIImage(named:"save-button"), for: .normal)
+        saveButton.addTarget(self, action: #selector(savePressed(_:)), for: .touchUpInside)
+        
+        let navBarItem = UIBarButtonItem(customView: saveButton)
+        let currWidth = navBarItem.customView?.widthAnchor.constraint(equalToConstant: 24)
+        currWidth?.isActive = true
+        let currHeight = navBarItem.customView?.heightAnchor.constraint(equalToConstant: 24)
+        currHeight?.isActive = true
+        self.navigationItem.rightBarButtonItem = navBarItem
         
         bioTextView.delegate = self
-
-        //let button = SpotifyLoginButton(viewController: self, scopes: [.streaming, .userLibraryRead])
-        //var cell = linkSpotifyButton.superview?.superview!
-        //cell?.addSubview(button)
-        //button.frame = linkSpotifyButton.frame
         
         if MusicService.sharedInstance.isSpotifyLoggedIn() {
             spotifyAuthCell.textLabel?.text = "Unlink Spotify"
@@ -104,13 +95,13 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return 1
-        case 1:
             return 3
-        case 2:
+        case 1:
             return 2
-        case 3:
+        case 2:
             return 4
+        case 3:
+            return 1
         default:
             return 0
         }
@@ -189,7 +180,7 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
 
 
         switch indexPath.section {
-        case 1:
+        case 0:
             guard let uid = Auth.auth().currentUser?.uid else {
                 // TODO: Tell user account not signed in
                 return
@@ -259,7 +250,7 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
             }
 
         // Music Authorization
-        case 2:
+        case 1:
             switch indexPath.row {
             case 0:
                 if MusicService.sharedInstance.isSpotifyLoggedIn() {
@@ -292,7 +283,7 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
                 break
             }
         // Account Deletion & Log Out
-        case 3:
+        case 2:
             switch indexPath.row {
             case 2:
                 let alert = UIAlertController(title: "Deleting Account", message: "Are you sure you want to delete your account? This cannot be undone!", preferredStyle: .alert)
@@ -313,6 +304,21 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
             default:
                 break
             }
+            
+        // Sending Feedback
+        case 3:
+            switch indexPath.row {
+            case 0:
+                let mailComposeViewController = configureMailController()
+                if(MFMailComposeViewController.canSendMail()){
+                    self.present(mailComposeViewController, animated: true, completion: nil)
+                } else{
+                    showMailError()
+                }
+            default:
+                break
+            }
+            
         default:
             break
         }
@@ -321,6 +327,8 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     @IBAction func editPicturePressed(_ sender: Any) {
         DispatchQueue.main.async {
             self.imagePicker = UIImagePickerController()
+            self.imagePicker.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white, NSAttributedStringKey.font: UIFont(name: "OpenSans-Bold", size: 16.0)!]
+            self.imagePicker.navigationBar.tintColor = .white
             self.imagePicker.delegate = self
             self.imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
             self.imagePicker.allowsEditing = true
@@ -386,5 +394,24 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
             // TODO: Show error in retrieivng user picture
             print(error.localizedDescription)
         }
+    }
+    
+    func configureMailController() -> MFMailComposeViewController{
+        let mailComposerVC = MFMailComposeViewController()
+        mailComposerVC.mailComposeDelegate = self
+        mailComposerVC.setToRecipients(["cs407getrecd@gmail.com"])
+        mailComposerVC.setSubject("Feedback")
+        return mailComposerVC
+    }
+    
+    func showMailError(){
+        let sendMailErrorAlert = UIAlertController(title: "Could not send email", message: "Your device couldn't send the email", preferredStyle: .alert)
+        let dismiss = UIAlertAction(title: "OK", style: .default, handler: nil)
+        sendMailErrorAlert.addAction(dismiss)
+        self.present(sendMailErrorAlert, animated: true, completion: nil)
+    }
+    
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.dismiss(animated: true, completion: nil)
     }
 }
