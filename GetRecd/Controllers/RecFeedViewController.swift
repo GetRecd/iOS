@@ -58,6 +58,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
+        recFeedTableView.tableFooterView = UIView()
         
         likeButton.isHidden = true
         getSongs()
