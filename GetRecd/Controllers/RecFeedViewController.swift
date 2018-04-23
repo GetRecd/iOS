@@ -62,11 +62,13 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
         likeButton.isHidden = true
         getSongs()
         getMovies()
+        getShows()
         
         recFeedTableView.delegate = self
         recFeedTableView.dataSource = self
         
         refresher = UIRefreshControl()
+        refresher.addTarget(self, action: #selector(getSongs), for: UIControlEvents.valueChanged)
         recFeedTableView.addSubview(refresher)
         
         blurEffectView.isUserInteractionEnabled = true
@@ -234,6 +236,8 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.recFeedTableView.reloadData()
         }
         
+        refresher.removeTarget(nil, action: nil, for: .allEvents)
+        
         switch segmentedControl.selectedSegmentIndex {
         case 0:
             refresher.addTarget(self, action: #selector(getSongs), for: UIControlEvents.valueChanged)
@@ -353,6 +357,9 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             if let error = error {
                 print(error.localizedDescription)
                 self.songs = []
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
                 return
             } else {
                 newSongs.append(contentsOf: spotifySongs)
@@ -365,6 +372,9 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             if let error = error {
                 print(error.localizedDescription)
                 self.songs = []
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
                 return
             } else {
                 newSongs.append(contentsOf: appleMusicSongs)
@@ -381,6 +391,7 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             self.songs = newSongs
         }
+        
     }
     
     @objc func getShows() {

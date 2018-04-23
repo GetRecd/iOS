@@ -15,6 +15,7 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     @IBOutlet weak var bioTextView: UITextView!
     @IBOutlet weak var spotifyAuthCell: UITableViewCell!
     @IBOutlet weak var appleMusicAuthCell: UITableViewCell!
+    @IBOutlet weak var navbarCell: UITableViewCell!
     
     var imagePicker: UIImagePickerController!
     var currentUser: User!
@@ -23,7 +24,29 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        
+        self.navigationItem.hidesBackButton = true
+//        let banner = UIImage(named: "launch-bg")
+//        let imageView = UIImageView(image: banner)
+//        var bannerWidth = navigationController?.navigationBar.frame.size.width
+//        var bannerHeight = navigationController?.navigationBar.frame.size.height
+//        var bannerx = bannerWidth! / 2 - banner!.size.width / 2
+//        var bannery = bannerHeight! / 2 - banner!.size.height / 2
+//        imageView.frame = CGRect(x: bannerx, y: bannery, width: bannerWidth!, height: bannerHeight!)
+//        imageView.contentMode = UIViewContentMode.scaleAspectFit
+//        self.navigationItem.titleView = imageView
+//        let navbarImage = UIImage(named: "launch-bg")
+//        let navImageView = UIImageView(frame: navigationController!.navigationBar.frame)
+//        navImageView.image = navbarImage
+//        //self.navigationController?.navigationBar.setBackgroundImage(navbarImage, for: .default)
+//        navigationController?.navigationItem.titleView = navImageView
+        
+        self.edgesForExtendedLayout = UIRectEdge()
+        self.extendedLayoutIncludesOpaqueBars = false
+        self.automaticallyAdjustsScrollViewInsets = false
+                self.view.addSubview(navbarCell)
+        
         bioTextView.delegate = self
 
         //let button = SpotifyLoginButton(viewController: self, scopes: [.streaming, .userLibraryRead])
@@ -95,7 +118,7 @@ class ProfileSettingsViewController: UITableViewController, UIImagePickerControl
 
     @IBAction func savePressed(_ sender: Any) {
         saveUserInfo()
-        dismiss(animated: true, completion: nil)
+        navigationController?.popViewController(animated: true)
     }
     
     
