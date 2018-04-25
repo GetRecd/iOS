@@ -335,11 +335,51 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                     }
                 })
-                
-                DispatchQueue.main.async {
-                    self.refresher.endRefreshing()
-                }
             }
+            
+            
+            // Add movies based on what friends have liked
+            DataService.sharedInstance.getFriends(uid: uid, success: { (friends) in
+                for friendID in friends {
+                    DataService.sharedInstance.getLikedMovies(uid: friendID, sucesss: { (likedMovies) in
+                        for id in likedMovies {
+                            MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
+                                for i in 0..<movies.count {
+                                    
+                                    let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
+                                        return movie.id == movies[i].id
+                                    })
+                                    
+                                    let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
+                                        return Int(id) == movies[i].id
+                                    })
+                                    
+                                    if !movieArrcontains && !likedArrContains {
+                                        self.movies.append(movies[i])
+                                    }
+                                    
+                                    if likedMovies.count < 5, self.movies.count == 5 {
+                                        break
+                                    } else if likedMovies.count < 10, self.movies.count == 2 {
+                                        break
+                                    } else if self.movies.count == 1 {
+                                        break
+                                    }
+                                }
+                            })
+                        }
+                    }, failure: { (error) in
+                        print(error.localizedDescription)
+                    })
+                }
+            }, failure: { (error) in
+                print((error.localizedDescription))
+            })
+            
+            DispatchQueue.main.async {
+                self.refresher.endRefreshing()
+            }
+            
         }) { (error) in
             // TODO: Show error
             print(error.localizedDescription)
@@ -436,11 +476,49 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                     }
                 })
-                
-                DispatchQueue.main.async {
-                    self.refresher.endRefreshing()
-                }
             }
+            
+            DataService.sharedInstance.getFriends(uid: uid, success: { (friends) in
+                for friendID in friends {
+                    DataService.sharedInstance.getLikedShows(uid: friendID, sucesss: { (likedShows) in
+                        for id in likedShows {
+                            TVService.sharedInstance.getRecommendedTV(id: id, success: { (shows) in
+                                for i in 0..<shows.count {
+                                    
+                                    let showArrcontains = self.shows.contains(where: { (show) -> Bool in
+                                        return show.id == shows[i].id
+                                    })
+                                    
+                                    let likedArrContains = likedShows.contains(where: { (id) -> Bool in
+                                        return Int(id) == shows[i].id
+                                    })
+                                    
+                                    if !showArrcontains && !likedArrContains {
+                                        self.shows.append(shows[i])
+                                    }
+                                    
+                                    if likedShows.count < 5, self.shows.count == 5 {
+                                        break
+                                    } else if likedShows.count < 10, self.shows.count == 2 {
+                                        break
+                                    } else if self.shows.count == 1 {
+                                        break
+                                    }
+                                }
+                            })
+                        }
+                    }, failure: { (error) in
+                        print(error.localizedDescription)
+                    })
+                }
+            }, failure: { (error) in
+                print(error.localizedDescription)
+            })
+            
+            DispatchQueue.main.async {
+                self.refresher.endRefreshing()
+            }
+            
         }) { (error) in
             // TODO: Show error
             print(error.localizedDescription)
