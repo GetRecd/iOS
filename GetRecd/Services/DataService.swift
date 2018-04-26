@@ -405,6 +405,22 @@ class DataService {
         }
     }
     
+    func getRating(uid: String,
+                   contentType: ContentType,
+                   contentId: String,
+                   success: @escaping (Int) -> (),
+                   failure: @escaping (Error) -> ()) {
+        let contentDocument = getDocumentForContentType(uid: uid, contentType: contentType)
+        contentDocument.getDocument { (snapshot, error) in
+            if let error = error {
+                failure(error)
+                return
+            }
+            let ratingData = snapshot?.data() ?? [String: Any]()
+            success(ratingData[contentId] as! Int)
+        }
+    }
+    
     func likeSongs(uid: String, appleMusicSongs: Set<String>, spotifySongs: Set<String>, success: @escaping () -> (), failure: @escaping (Error) -> ()) {
         let userSpotifyLikes = userSpotifyLikesCollection.document(uid)
         let userAppleMusicLikes = userAppleMusicLikesCollection.document(uid)
@@ -422,16 +438,16 @@ class DataService {
                     userAppleMusicLikesSnapshot = try transaction.getDocument(userAppleMusicLikes)
                 }
             } catch let fetchError as NSError {
-                var userSLikes = [String: Bool]()
-                var userAPLikes = [String: Bool]()
+                var userSLikes = [String: Int]()
+                var userAPLikes = [String: Int]()
                 for song in spotifySongs {
-                    userSLikes[song] = true
+                    userSLikes[song] = 0
                 }
                 
                 transaction.setData(userSLikes, forDocument: userSpotifyLikes)
                 
                 for song in appleMusicSongs {
-                    userAPLikes[song] = true
+                    userAPLikes[song] = 0
                 }
                 
                 transaction.setData(userAPLikes, forDocument: userAppleMusicLikes)
@@ -440,7 +456,7 @@ class DataService {
             
             if var userLikes = userSpotifyLikesSnapshot?.data() {
                 for song in spotifySongs {
-                    userLikes[song] = true
+                    userLikes[song] = 0
                 }
                 
                 transaction.setData(userLikes, forDocument: userSpotifyLikes)
@@ -448,7 +464,7 @@ class DataService {
             
             if var userLikes = userAppleMusicLikesSnapshot?.data() {
                 for song in appleMusicSongs {
-                    userLikes[song] = true
+                    userLikes[song] = 0
                 }
                 
                 transaction.setData(userLikes, forDocument: userAppleMusicLikes)
@@ -535,10 +551,10 @@ class DataService {
             do {
                 userMovieLikesSnapshot = try transaction.getDocument(userMovieLikes)
             } catch let fetchError as NSError {
-                var userLikes = [String: Bool]()
+                var userLikes = [String: Int]()
                 
                 for movie in movies {
-                    userLikes["\(movie)"] = true
+                    userLikes["\(movie)"] = 0
                 }
                 
                 transaction.setData(userLikes, forDocument: userMovieLikes)
@@ -548,7 +564,7 @@ class DataService {
             
             var movieLikes = userMovieLikesSnapshot?.data() ?? [String: Any]()
             for movie in movies {
-                movieLikes["\(movie)"] = true
+                movieLikes["\(movie)"] = 0
             }
             
             transaction.setData(movieLikes, forDocument: userMovieLikes)
@@ -592,10 +608,10 @@ class DataService {
             do {
                 userShowLikesSnapshot = try transaction.getDocument(userShowLikes)
             } catch let fetchError as NSError {
-                var userLikes = [String: Bool]()
+                var userLikes = [String: Int]()
                 
                 for show in shows {
-                    userLikes["\(show)"] = true
+                    userLikes["\(show)"] = 0
                 }
                 
                 transaction.setData(userLikes, forDocument: userShowLikes)
@@ -605,7 +621,7 @@ class DataService {
             
             var showLikes = userShowLikesSnapshot?.data() ?? [String: Any]()
             for show in shows {
-                showLikes["\(show)"] = true
+                showLikes["\(show)"] = 0
             }
             
             transaction.setData(showLikes, forDocument: userShowLikes)
