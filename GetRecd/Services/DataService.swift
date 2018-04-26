@@ -27,6 +27,10 @@ class DataService {
     private var profilePictureRef = Storage.storage().reference().child("UserPictures")
     private var notificationCollection = Firestore.firestore().collection("Notifications")
 
+    enum ContentType {
+        case AppleSong, SpotifySong, Movie, Show
+    }
+    
     /**
      * Updates a user's entry in the Firebase database, creating one if absent.
      *
@@ -363,6 +367,40 @@ class DataService {
             } else {
                 let uri = snapshot!.data()!["uri"] as! String
                 success(uri)
+            }
+        }
+    }
+    
+    private func getDocumentForContentType(uid: String, contentType: ContentType) -> DocumentReference {
+        var contentCollection: CollectionReference
+        switch contentType {
+        case .AppleSong:
+            contentCollection = userAppleMusicLikesCollection
+        case .SpotifySong:
+            contentCollection = userSpotifyLikesCollection
+        case .Movie:
+            contentCollection = userMovieLikesCollection
+        case .Show:
+            contentCollection = userShowLikesCollection
+        }
+        return contentCollection.document(uid)
+    }
+    
+    func rateContent(uid: String,
+                     contentType: ContentType,
+                     contentId: String,
+                     rating: Int,
+                     success: @escaping () -> (),
+                     failure: @escaping (Error) -> ()) {
+        let contentDocument = getDocumentForContentType(uid: uid, contentType: contentType)
+        db.runTransaction({ (transaction, errorPointer) -> Any? in
+            transaction.setData([contentId: rating], forDocument: contentDocument)
+            return nil
+        }) { (object, error) in
+            if let error = error {
+                failure(error)
+            } else {
+                success()
             }
         }
     }
