@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import FirebaseAuth
 
 class RatingController: UIStackView {
     
@@ -47,6 +48,42 @@ class RatingController: UIStackView {
             rating = 0
         } else {
             rating = selectedRating
+        }
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("Tried to rate a song before being authenticated!")
+            return
+        }
+        /* Check if the cell containing this stack view is a movie or a song cell. */
+        if let movieCell = self.superview?.superview as? MovieCell {
+            let movie = movieCell.movie
+            if movie == nil {
+                DataService.sharedInstance.rateContent(
+                    uid: uid,
+                    contentType: DataService.ContentType.Show,
+                    contentId: String(movieCell.show.id),
+                    rating: selectedRating,
+                    success: { },
+                    failure: { (error) in print("Failed to rate a show: \(error)") })
+            } else {
+                DataService.sharedInstance.rateContent(
+                    uid: uid,
+                    contentType: DataService.ContentType.Movie,
+                    contentId: String(movie!.id),
+                    rating: selectedRating,
+                    success: { },
+                    failure: { (error) in print("Failed to rate a movie: \(error)") })
+            }
+        } else if let songCell = self.superview?.superview as? SongCell {
+            let songType = (songCell.song.type == Song.SongType.AppleMusic)
+                ? DataService.ContentType.AppleSong
+                : DataService.ContentType.SpotifySong
+            DataService.sharedInstance.rateContent(
+                uid: uid,
+                contentType: songType,
+                contentId: String(songCell.song.id),
+                rating: selectedRating,
+                success: { },
+                failure: { (error) in print("Failed to rate a song: \(error)") })
         }
     }
     
