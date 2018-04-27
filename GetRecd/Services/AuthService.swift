@@ -69,6 +69,10 @@ class AuthService: NSObject {
                                 userData["name"] = response.dictionaryValue?["name"]
                                 userData["email"] = response.dictionaryValue?["email"]
                                 userData["uid"] = user.uid
+                                
+                                userData["privateMovie"] = "false"
+                                userData["privateShow"] = "false"
+                                userData["privateMusic"] = "false"
                                 userData["profilePictureURL"] = ((response.dictionaryValue?["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String
                                 DataService.sharedInstance.createUser(uid: user.uid, userData: userData, success: { (user) in
                                     controller.performSegue(withIdentifier: "RecFeed", sender: controller)
@@ -142,6 +146,10 @@ extension AuthService: GIDSignInDelegate {
             userData["name"] = user.displayName
             userData["email"] = user.email
             userData["uid"] = user.uid
+            
+            userData["privateMovie"] = "false"
+            userData["privateShow"] = "false"
+            userData["privateMusic"] = "false"
             userData["profilePictureURL"] = user.photoURL?.absoluteString
             DataService.sharedInstance.createUser(uid: user.uid, userData: userData, success: { (user) in
                 DispatchQueue.main.async {

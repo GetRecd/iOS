@@ -16,8 +16,6 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
-    var refresher: UIRefreshControl!
-    
     var searchController = UISearchController(searchResultsController: nil)
     var timerToQuery: Timer?
     var searchString = ""
@@ -75,9 +73,6 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         view.layoutIfNeeded()
         
         getFriends()
-        
-        refresher = UIRefreshControl()
-        tableView.addSubview(refresher)
     }
 
     override func didReceiveMemoryWarning() {
@@ -208,24 +203,15 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
             addButton.isHidden = true
             denyButton.isHidden = true
             searchController.searchBar.isHidden = false
-            refresher.isHidden = false
-            refresher = UIRefreshControl()
-            refresher.addTarget(self, action: #selector(getFriends), for: UIControlEvents.valueChanged)
-            
         case 1:
             addButton.isHidden = false
             searchController.searchBar.isHidden = false
-            refresher.isHidden = true
             denyButton.isHidden = true
         case 2:
             getRequests()
             searchController.searchBar.isHidden = true
-            refresher.isHidden = false
-            refresher = UIRefreshControl()
-            refresher.addTarget(self, action: #selector(getRequests), for: UIControlEvents.valueChanged)
         default:
             addButton.isHidden = true
-            refresher.isHidden = false
             denyButton.isHidden = true
             searchController.searchBar.isHidden = false
         }
@@ -238,16 +224,10 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         DataService.sharedInstance.getFriends(uid: uid, success: { (friends) in
             self.friends = friends
-            DispatchQueue.main.async {
-                self.refresher.endRefreshing()
-            }
 
         }) { (error) in
             // TODO: Show error in getting friends
             print(error.localizedDescription)
-            DispatchQueue.main.async {
-                self.refresher.endRefreshing()
-            }
 
         }
         
@@ -260,14 +240,8 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         DataService.sharedInstance.getIncomingFriendRequests(uid: uid, success: { (requests) in
             self.requests = requests
-            DispatchQueue.main.async {
-                self.refresher.endRefreshing()
-            }
         }) { (error) in
             print(error.localizedDescription)
-            DispatchQueue.main.async {
-                self.refresher.endRefreshing()
-            }
         }
     }
     
