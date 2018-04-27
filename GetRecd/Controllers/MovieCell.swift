@@ -22,7 +22,9 @@ class MovieCell: UITableViewCell {
             self.nameLabel.text = movie.name
             self.releaseLabel.text = movie.releaseDate
             self.artworkView.image = nil
-            self.ratingsView.rating = 0
+            if self.ratingsView != nil {
+                self.ratingsView.rating = 0
+            }
             
             downloadArtwork(url: (basePosterPath + movie.posterPath)) { (image) in
                 DispatchQueue.main.async {
@@ -51,7 +53,9 @@ class MovieCell: UITableViewCell {
             self.nameLabel.text = show.name
             self.releaseLabel.text = show.releaseDate
             self.artworkView.image = nil
-            self.ratingsView.rating = 0
+            if self.ratingsView != nil {
+                self.ratingsView.rating = 0
+            }
 
             downloadArtwork(url: (basePosterPath + show.posterPath)) { (image) in
                 DispatchQueue.main.async {
