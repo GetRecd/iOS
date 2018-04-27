@@ -423,6 +423,30 @@ class DataService {
         }
     }
     
+    func getContentWithRating(uid: String,
+                              contentType: ContentType,
+                              minimumRating: Int,
+                              success: @escaping ([String]) -> (),
+                              failure: @escaping (Error) -> ()) {
+        let contentDocument = getDocumentForContentType(uid: uid, contentType: contentType)
+        contentDocument.getDocument { (snapshot, error) in
+            if let error = error {
+                failure(error)
+                return
+            }
+            let ratingData = snapshot?.data() ?? [String: Any]()
+            var filtered = [String]()
+            for (id, rating) in ratingData {
+                if let ratingNumber = rating as? Int {
+                    if ratingNumber >= minimumRating {
+                        filtered.append(id)
+                    }
+                }
+            }
+            success(filtered)
+        }
+    }
+    
     func likeSongs(uid: String, appleMusicSongs: Set<String>, spotifySongs: Set<String>, success: @escaping () -> (), failure: @escaping (Error) -> ()) {
         let userSpotifyLikes = userSpotifyLikesCollection.document(uid)
         let userAppleMusicLikes = userAppleMusicLikesCollection.document(uid)
