@@ -291,6 +291,7 @@ class SearchViewController: UITableViewController {
 
                 cell.tag = indexPath.row
                 cell.artworkView.tag = indexPath.row
+                cell.artworkView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showShowTrailer(_:))))
                 let show = shows[indexPath.row]
                 cell.show = show
                 return cell
@@ -438,6 +439,31 @@ extension SearchViewController: UIWebViewDelegate {
         
         let movie = movies[artworkView.tag]
         MovieService.sharedInstance.getVideo(id: movie.id, width: Int(view.frame.width - 16), height: Int((view.frame.width - 16) * (9 / 16)), success: { (htm) in
+            
+            
+            DispatchQueue.main.async {
+                
+                
+                self.blurEffectView.frame = self.view.bounds
+                self.blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                
+                self.view.addSubview(self.blurEffectView) //if you have more UIViews, use an insertSubview
+                
+                self.videoView.loadHTMLString(htm, baseURL: nil)
+                
+                self.view.addSubview(self.videoView)
+            }
+        }) {
+            print("Error loading video")
+        }
+    }
+    
+    @objc func showShowTrailer(_ sender: Any) {
+        let tap = sender as! UITapGestureRecognizer
+        let artworkView = tap.view!
+        
+        let movie = shows[artworkView.tag]
+        MovieService.sharedInstance.getShowVideo(id: movie.id, width: Int(view.frame.width - 16), height: Int((view.frame.width - 16) * (9 / 16)), success: { (htm) in
             
             
             DispatchQueue.main.async {

@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseAuth
+import WebKit
 
 class ProfileShowsViewController: UITableViewController {
     var showIds = [(String)]() {
@@ -17,6 +18,12 @@ class ProfileShowsViewController: UITableViewController {
             }
         }
     }
+    
+    let blurEffectView = UIVisualEffectView(effect: nil)
+    
+    
+    var videoView = WKWebView()
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +42,24 @@ class ProfileShowsViewController: UITableViewController {
         let currHeight = navBarItem.customView?.heightAnchor.constraint(equalToConstant: 24)
         currHeight?.isActive = true
         self.navigationItem.rightBarButtonItem = navBarItem
+        
+        blurEffectView.isUserInteractionEnabled = true
+        blurEffectView.effect = UIBlurEffect(style: .dark)
+        //always fill the view
+        blurEffectView.frame = self.view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        self.blurEffectView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dimissTrailer)))
+        
+        let jscript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width'); document.getElementsByTagName('head')[0].appendChild(meta);"
+        let userScript = WKUserScript(source: jscript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        let wkUController = WKUserContentController()
+        wkUController.addUserScript(userScript)
+        let wkWebConfig = WKWebViewConfiguration()
+        wkWebConfig.userContentController = wkUController
+        wkWebConfig.requiresUserActionForMediaPlayback = false
+        
+        videoView = WKWebView(frame: CGRect(x: 8, y: (self.view.frame.height / 2) - ((self.view.frame.width - 16) * (9 / 32)), width: self.view.frame.width - 16, height: (self.view.frame.width - 16) * (9 / 16)), configuration: wkWebConfig)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -75,11 +100,44 @@ class ProfileShowsViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
 
         let show = showIds[indexPath.row]
-
+        cell.artworkView.tag = indexPath.row
+        cell.artworkView.isUserInteractionEnabled = true
+        cell.artworkView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showTrailer(_:))))
         TVService.sharedInstance.getShow(with: show) { (show) in
             cell.show = show
         }
 
         return cell
+    }
+    @objc func dimissTrailer() {
+        
+        videoView.removeFromSuperview()
+        blurEffectView.removeFromSuperview()
+        
+        
+    }
+    @objc func showTrailer(_ sender: Any) {
+        let tap = sender as! UITapGestureRecognizer
+        let artworkView = tap.view!
+        
+        let movieId = showIds[artworkView.tag]
+        MovieService.sharedInstance.getShowVideo(id: Int(movieId)!, width: Int(view.frame.width - 16), height: Int((view.frame.width - 16) * (9 / 16)), success: { (htm) in
+            
+            
+            DispatchQueue.main.async {
+                
+                
+                self.blurEffectView.frame = self.view.bounds
+                self.blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                
+                self.view.addSubview(self.blurEffectView) //if you have more UIViews, use an insertSubview
+                
+                self.videoView.loadHTMLString(htm, baseURL: nil)
+                
+                self.view.addSubview(self.videoView)
+            }
+        }) {
+            print("Error loading video")
+        }
     }
 }
