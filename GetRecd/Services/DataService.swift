@@ -394,7 +394,7 @@ class DataService {
                      failure: @escaping (Error) -> ()) {
         let contentDocument = getDocumentForContentType(uid: uid, contentType: contentType)
         db.runTransaction({ (transaction, errorPointer) -> Any? in
-            transaction.setData([contentId: rating], forDocument: contentDocument)
+            transaction.updateData([contentId: rating], forDocument: contentDocument)
             return nil
         }) { (object, error) in
             if let error = error {
@@ -417,7 +417,9 @@ class DataService {
                 return
             }
             let ratingData = snapshot?.data() ?? [String: Any]()
-            success(ratingData[contentId] as! Int)
+            if let rating = ratingData[contentId] as? Int {
+                success(rating)
+            }
         }
     }
     

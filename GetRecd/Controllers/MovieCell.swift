@@ -7,13 +7,14 @@
 //
 
 import UIKit
-
+import FirebaseAuth
 
 class MovieCell: UITableViewCell {
 
     @IBOutlet weak var artworkView: UIImageView!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var releaseLabel: UILabel!
+    @IBOutlet weak var ratingsView: RatingController!
 
     var basePosterPath = "https://image.tmdb.org/t/p/original/"
     var movie: Movie! {
@@ -22,11 +23,24 @@ class MovieCell: UITableViewCell {
             self.releaseLabel.text = movie.releaseDate
             self.artworkView.image = nil
 
-
             downloadArtwork(url: (basePosterPath + movie.posterPath)) { (image) in
                 DispatchQueue.main.async {
                     self.artworkView.image = image
                 }
+            }
+
+            if ratingsView != nil {
+                guard let uid = Auth.auth().currentUser?.uid else {
+                    print("Tried to retrieve a rating before authenticating!")
+                    return
+                }
+
+                DataService.sharedInstance.getRating(
+                        uid: uid,
+                        contentType: DataService.ContentType.Movie,
+                        contentId: String(movie.id),
+                        success: { (rating) in self.ratingsView.rating = rating },
+                        failure: { (error) in print("Failed to retrieve a song rating: \(error)") })
             }
         }
     }
@@ -41,6 +55,20 @@ class MovieCell: UITableViewCell {
                 DispatchQueue.main.async {
                     self.artworkView.image = image
                 }
+            }
+
+            if ratingsView != nil {
+                guard let uid = Auth.auth().currentUser?.uid else {
+                    print("Tried to retrieve a rating before authenticating!")
+                    return
+                }
+
+                DataService.sharedInstance.getRating(
+                        uid: uid,
+                        contentType: DataService.ContentType.Show,
+                        contentId: String(show.id),
+                        success: { (rating) in self.ratingsView.rating = rating },
+                        failure: { (error) in print("Failed to retrieve a song rating: \(error)") })
             }
         }
     }

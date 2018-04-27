@@ -118,14 +118,6 @@
                                                         <constraint firstAttribute="width" constant="182" id="Oim-ie-dUP"/>
                                                         <constraint firstAttribute="height" constant="30" id="tvE-RB-sQD"/>
                                                     </constraints>
-                                                    <userDefinedRuntimeAttributes>
-                                                        <userDefinedRuntimeAttribute type="size" keyPath="starSize">
-                                                            <size key="value" width="30" height="30"/>
-                                                        </userDefinedRuntimeAttribute>
-                                                        <userDefinedRuntimeAttribute type="number" keyPath="starCount">
-                                                            <integer key="value" value="5"/>
-                                                        </userDefinedRuntimeAttribute>
-                                                    </userDefinedRuntimeAttributes>
                                                 </stackView>
                                             </subviews>
                                             <constraints>
@@ -146,6 +138,7 @@
                                         <connections>
                                             <outlet property="artworkView" destination="xdO-3f-vYz" id="ug4-eG-YPw"/>
                                             <outlet property="nameLabel" destination="o2E-SW-gR2" id="DVS-5B-mrA"/>
+                                            <outlet property="ratingsView" destination="aQi-JS-LUB" id="DhO-Lm-f7n"/>
                                             <outlet property="releaseLabel" destination="N1n-ae-tfY" id="s43-35-vd9"/>
                                         </connections>
                                     </tableViewCell>
@@ -231,6 +224,7 @@
                                             <outlet property="artworkView" destination="zLf-jF-5kR" id="cVO-Qn-wae"/>
                                             <outlet property="nameLabel" destination="DeD-S3-n8S" id="hAt-Lu-T48"/>
                                             <outlet property="playButton" destination="70o-TT-ORL" id="vMh-I0-Z5H"/>
+                                            <outlet property="ratingsView" destination="nsj-Pk-8DB" id="vmY-fM-wfd"/>
                                             <outlet property="typeView" destination="Qdb-9x-Irh" id="Zq1-sA-bQL"/>
                                         </connections>
                                     </tableViewCell>
