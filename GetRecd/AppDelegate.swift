@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import GoogleSignIn
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,22 +18,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        UserDefaults.standard.setValue(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        
         FirebaseApp.configure()
         
-        MusicService.sharedInstance.spotifyAuth = SPTAuth.defaultInstance()
-        MusicService.sharedInstance.spotifyPlayer = SPTAudioStreamingController.sharedInstance()
-        MusicService.sharedInstance.spotifyAuth.clientID = "ee396a63623f4066a6d5be5d094ffa94"
-        MusicService.sharedInstance.spotifyAuth.redirectURL = URL(string: "GetRecd://spotify")!
-        MusicService.sharedInstance.spotifyAuth.sessionUserDefaultsKey = "spotify_session"
-        MusicService.sharedInstance.spotifyAuth.requestedScopes = [SPTAuthStreamingScope]
+        AuthService.sharedInstance.setupGoogle()
         
-        try? MusicService.sharedInstance.spotifyPlayer.start(withClientId: MusicService.sharedInstance.spotifyAuth.clientID)
-    
+        MusicService.sharedInstance.setupSpotify()
+        MusicService.sharedInstance.setupAppleMusic()
+
+        let backgroundImage = UIImage(named: "launch-bg")?.resizableImage(withCapInsets: UIEdgeInsetsMake(0, 15, 0, 15), resizingMode: UIImageResizingMode.stretch)
+        
+        UINavigationBar.appearance().setBackgroundImage(backgroundImage, for: .default)
+       
         let storyboard = UIStoryboard(name: "RecFeed", bundle: nil)
-        
+
         if Auth.auth().currentUser != nil {
+            // Reauthenticate!
+            
+            if let notification = launchOptions?[.remoteNotification] as? [String: AnyObject] {
+                // 2
+                UserDefaults.standard.set(notification["uid"], forKey: "notifyUID");
+                UserDefaults.standard.synchronize()
+            }
+
             window?.rootViewController = storyboard.instantiateInitialViewController()
         }
+    
+        registerForPushNotifications()
+
         return true
     }
 
@@ -67,7 +82,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     print(error.localizedDescription)
                 } else if session != nil {
                     MusicService.sharedInstance.spotifyPlayer.login(withAccessToken: MusicService.sharedInstance.spotifyAuth.session.accessToken)
-                    MusicService.sharedInstance.audioTest()
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: "SpotifyLoggedIn"), object: nil)
+                    MusicService.sharedInstance.checkIfSpotifyPlaylistExists { (exists) in
+                        if !exists {
+                            MusicService.sharedInstance.createSpotifyPlaylist(success: {
+                                print("Spotify playlist created")
+                            }, failure: { (error) in
+                                print(error.localizedDescription)
+                            })
+                        }
+                    }
                 }
             }
             
@@ -79,5 +103,50 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 sourceApplication:options[UIApplicationOpenURLOptionsKey.sourceApplication] as? String,
                 annotation: [:])
     }
+    
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenParts = deviceToken.map { data -> String in
+            return String(format: "%02.2hhx", data)
+        }
+        
+        let token = tokenParts.joined()
+        if let user = Auth.auth().currentUser {
+            DataService.sharedInstance.setNotificationToken(uid: user.uid, token: token, success: {
+                print("Set token in database")
+            }, failure: { (error) in
+                print(error.localizedDescription)
+            })
+        }
+        print("Device Token: \(token)")
+    }
+    
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register: \(error)")
+    }
+    
+    
+    func registerForPushNotifications() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
+            (granted, error) in
+            print("Permission granted: \(granted)")
+            
+            guard granted else { return }
+            self.getNotificationSettings()
+        }
+    }
+    
+    func getNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+            print("Notification settings: \(settings)")
+            guard settings.authorizationStatus == .authorized else { return }
+            DispatchQueue.main.sync {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+            
+        }
+    }
+    
 }
 

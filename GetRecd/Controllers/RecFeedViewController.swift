@@ -2,39 +2,577 @@
 //  RecFeedViewController.swift
 //  GetRecd
 //
-//  Created by Dhruv Upadhyay on 2/20/18.
+//  Created by Dhruv Upadhyay on 3/26/18.
 //  Copyright © 2018 CS 407. All rights reserved.
 //
 
 import UIKit
 import FirebaseAuth
+import WebKit
 
-class RecFeedViewController: UIViewController {
+class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-    var currentUser: User?
+    var refresher: UIRefreshControl!
+    
+    @IBOutlet weak var recFeedTableView: UITableView!
+    
+    @IBOutlet weak var likeButton: UIButton!
+    
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    var movies = [Movie]() {
+        didSet {
+            DispatchQueue.main.async {
+                self.recFeedTableView.reloadData()
+            }
+        }
+    }
+    
+    var shows = [Show]() {
+        didSet {
+            DispatchQueue.main.async {
+                self.recFeedTableView.reloadData()
+            }
+        }
+    }
+    
+    var songs = [Song]() {
+        didSet {
+            DispatchQueue.main.async {
+                self.recFeedTableView.reloadData()
+            }
+        }
+    }
+    
+    var likedAppleMusicSongs = Set<String>()
+    var likedSpotifySongs = Set<String>()
+    var likedMovies = Set<Int>()
+    var likedTVShows = Set<Int>()
+    
+    let blurEffectView = UIVisualEffectView(effect: nil)
+    
+    
+    var videoView = WKWebView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
-        getCurrentUser()
+        recFeedTableView.tableFooterView = UIView()
+        
+        likeButton.isHidden = true
+        getSongs()
+        getMovies()
+        getShows()
+        
+        recFeedTableView.delegate = self
+        recFeedTableView.dataSource = self
+        
+        refresher = UIRefreshControl()
+        refresher.addTarget(self, action: #selector(getSongs), for: UIControlEvents.valueChanged)
+        recFeedTableView.addSubview(refresher)
+        
+        blurEffectView.isUserInteractionEnabled = true
+        blurEffectView.effect = UIBlurEffect(style: .dark)
+        //always fill the view
+        blurEffectView.frame = self.view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        self.blurEffectView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dimissTrailer)))
+        
+        let jscript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width'); document.getElementsByTagName('head')[0].appendChild(meta);"
+        let userScript = WKUserScript(source: jscript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        let wkUController = WKUserContentController()
+        wkUController.addUserScript(userScript)
+        let wkWebConfig = WKWebViewConfiguration()
+        wkWebConfig.userContentController = wkUController
+        wkWebConfig.requiresUserActionForMediaPlayback = false
+        
+        videoView = WKWebView(frame: CGRect(x: 8, y: (self.view.frame.height / 2) - ((self.view.frame.width - 16) * (9 / 32)), width: self.view.frame.width - 16, height: (self.view.frame.width - 16) * (9 / 16)), configuration: wkWebConfig)
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        getCurrentUser()
+        SongCell.currPlaying = -1
     }
     
-    func getCurrentUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        DataService.instance.getUser(userID: uid) { (user) in
-            self.currentUser = user
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch  segmentedControl.selectedSegmentIndex {
+        case 0:
+            return songs.count
+        case 1:
+            return movies.count
+        case 2:
+            return shows.count
+        default:
+            return 0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "SongCell", for: indexPath) as! SongCell
+            
+            // Reset the cell from previous use:
+            cell.artworkView.tag = indexPath.row
+            
+            let song = songs[indexPath.row]
+            cell.song = song
+            return cell
+        case 1:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+            
+            // Reset the cell from previous use:
+            cell.releaseLabel.text = ""
+            cell.nameLabel.text = ""
+            cell.artworkView.image = UIImage()
+            
+            cell.tag = indexPath.row
+            cell.artworkView.tag = indexPath.row
+            cell.artworkView.isUserInteractionEnabled = true
+            cell.artworkView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showTrailer(_:))))
+            let movie = movies[indexPath.row]
+            cell.movie = movie
+            return cell
+        case 2:
+            // Note: we're using a movie cell as a tv show cell as well for efficiency 😄
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+            
+            // Reset the cell from previous use:
+            cell.releaseLabel.text = ""
+            cell.nameLabel.text = ""
+            cell.artworkView.image = UIImage()
+            
+            cell.tag = indexPath.row
+            cell.artworkView.tag = indexPath.row
+            let show = shows[indexPath.row]
+            cell.show = show
+            return cell
+        default:
+            return UITableViewCell()
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            if let cell = tableView.cellForRow(at: indexPath) as? SongCell {
+                
+                if cell.accessoryType == .checkmark {
+                    cell.accessoryType = .none
+                    switch cell.song.type {
+                    case .AppleMusic:
+                        likedAppleMusicSongs.remove(cell.song.id)
+                    case .Spotify:
+                        likedSpotifySongs.remove(cell.song.id)
+                    default:
+                        break
+                    }
+                } else {
+                    cell.accessoryType = .checkmark
+                    switch cell.song.type {
+                    case .AppleMusic:
+                        likedAppleMusicSongs.insert(cell.song.id)
+                    case .Spotify:
+                        likedSpotifySongs.insert(cell.song.id)
+                    default:
+                        break
+                    }
+                }
+            }
+            
+            if likedAppleMusicSongs.count > 0 || likedSpotifySongs.count > 0 {
+                likeButton.isHidden = false
+            } else {
+                likeButton.isHidden = true
+            }
+            tableView.deselectRow(at: indexPath, animated: true)
+        case 1:
+            if let cell = tableView.cellForRow(at: indexPath) as? MovieCell {
+
+                if cell.accessoryType == .checkmark {
+                    cell.accessoryType = .none
+                    likedMovies.remove(cell.movie.id)
+                } else {
+                    cell.accessoryType = .checkmark
+                    likedMovies.insert(cell.movie.id)
+                }
+            }
+
+            if likedMovies.count > 0 {
+                likeButton.isHidden = false
+            } else {
+                likeButton.isHidden = true
+            }
+
+            tableView.deselectRow(at: indexPath, animated: true)
+        case 2:
+            if let cell = tableView.cellForRow(at: indexPath) as? MovieCell {
+                
+                if cell.accessoryType == .checkmark {
+                    cell.accessoryType = .none
+                    likedTVShows.remove(cell.show.id)
+                } else {
+                    cell.accessoryType = .checkmark
+                    likedTVShows.insert(cell.show.id)
+                }
+            }
+            
+            if likedTVShows.count > 0 {
+                likeButton.isHidden = false
+            } else {
+                likeButton.isHidden = true
+            }
+            
+            tableView.deselectRow(at: indexPath, animated: true)
+        default:
+            break
+        }
+    }
+    
+    @IBAction func didSelectSegment(_ sender: Any) {
+        DispatchQueue.main.async {
+            self.recFeedTableView.reloadData()
+        }
+        
+        refresher.removeTarget(nil, action: nil, for: .allEvents)
+        
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            refresher.addTarget(self, action: #selector(getSongs), for: UIControlEvents.valueChanged)
+        case 1:
+            refresher.addTarget(self, action: #selector(getMovies), for: UIControlEvents.valueChanged)
+        case 2:
+            refresher.addTarget(self, action: #selector(getShows), for: UIControlEvents.valueChanged)
+        default:
+            DispatchQueue.main.async {
+                self.recFeedTableView.reloadData()
+            }
+        }
+    }
+    
+    @IBAction func onAdd(_ sender: Any) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            // TODO: Show error in getting current user's uid
+            return
+        }
+        
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            DataService.sharedInstance.likeSongs(uid: uid, appleMusicSongs: likedAppleMusicSongs, spotifySongs: likedSpotifySongs, success: {
+                // TODO: Show successful add
+                print("Yay")
+            }) { (error) in
+                print(error.localizedDescription)
+            }
+        case 1:
+            DataService.sharedInstance.likeMovies(uid: uid, movies: likedMovies, success: {
+                // TODO: Show successful add
+                print("Yay")
+            }) { (error) in
+                // TODO: Show error on like movies
+                print(error.localizedDescription)
+            }
+        case 2:
+            DataService.sharedInstance.likeShows(uid: uid, shows: likedTVShows, success: {
+                // TODO: Show successful add
+                print("Yay")
+            }) { (error) in
+                // TODO: Show error on like movies
+                print(error.localizedDescription)
+            }
+        default:
+            break
+        }
+        
+    }
+    
+    override var prefersStatusBarHidden: Bool {
+        return true
+    }
+
+    @objc func getMovies() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            // TODO: Show error in getting current user's uid
+            return
+        }
+        
+        DataService.sharedInstance.getContentWithRating(uid: uid, contentType: DataService.ContentType.Movie, minimumRating: 4, success: { (movieIds) in
+            self.movies = []
+            for id in movieIds {
+                MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (recommendedIds) in
+                    var selectedCount = 0
+                    for recommendedId in recommendedIds {
+                        if !self.movies.contains(recommendedId) {
+                            self.movies.append(recommendedId)
+                        }
+                        selectedCount += 1
+                        if selectedCount == 2 {
+                            break
+                        }
+                    }
+                })
+            }
+        }) { (error) in
+            print("Failed to retrieve movie ratings: \(error)")
+        }
+        
+        DataService.sharedInstance.getLikedMovies(uid: uid, sucesss: { (likedMovies) in
+            for cell in self.recFeedTableView.visibleCells {
+                cell.accessoryType = .none
+                self.likeButton.isHidden = true
+            }
+            
+            // add top 5 recommended movies if they have less than 5 saved movies, else add top 2 if less than 10, else top 1
+            // Checks to make sure that reccomended movies aren't shown more than once and that user has not already liked them
+            
+            for id in likedMovies {
+                MovieService.sharedInstance.getRecommendedMovies(id: id, success: { (movies) in
+                    for i in 0..<movies.count {
+                        
+                        let movieArrcontains = self.movies.contains(where: { (movie) -> Bool in
+                            return movie.id == movies[i].id
+                        })
+                        
+                        let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
+                            return Int(id) == movies[i].id
+                        })
+                        
+                        if !movieArrcontains && !likedArrContains {
+                            self.movies.append(movies[i])
+                        }
+                        
+                        if likedMovies.count < 5, self.movies.count == 5 {
+                            break
+                        } else if likedMovies.count >= 5, likedMovies.count < 10, self.movies.count == 2 {
+                            break
+                        } else if likedMovies.count > 10, self.movies.count == 1 {
+                            break
+                        }
+                    }
+                })
+            }
+            
+            
+            // Recommend movies based on what friends have liked
+            DataService.sharedInstance.getFriends(uid: uid, success: { (friends) in
+                for friendID in friends {
+                    DataService.sharedInstance.getLikedMovies(uid: friendID, sucesss: { (friendsLikedMovies) in
+                        for id in friendsLikedMovies {
+                            MovieService.sharedInstance.getMovie(with: id, completion: { (movie) in
+                                let movieArrcontains = self.movies.contains(where: { (movieInArr) -> Bool in
+                                    return movieInArr.id == movie.id
+                                })
+                                
+                                let likedArrContains = likedMovies.contains(where: { (id) -> Bool in
+                                    return Int(id) == movie.id
+                                })
+                                
+                                if !movieArrcontains && !likedArrContains {
+                                    self.movies.append(movie)
+                                }
+                            })
+                        }
+                    }, failure: { (error) in
+                        print(error.localizedDescription)
+                    })
+                }
+            }, failure: { (error) in
+                print((error.localizedDescription))
+            })
+            
+            DispatchQueue.main.async {
+                self.refresher.endRefreshing()
+            }
+            
+        }) { (error) in
+            // TODO: Show error
+            print(error.localizedDescription)
+        }
+    }
+    
+    @objc func getSongs() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            // TODO: Show error in getting current user's uid
+            return
+        }
+        let songSearchGroup = DispatchGroup()
+        var newSongs: [Song] = []
+        songSearchGroup.enter()
+        MusicService.sharedInstance.getSpotifyRecommendations(uid: uid) { (spotifySongs, error) in
+            if let error = error {
+                print(error.localizedDescription)
+                self.songs = []
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
+                return
+            } else {
+                newSongs.append(contentsOf: spotifySongs)
+                songSearchGroup.leave()
+            }
+        }
+        
+        songSearchGroup.enter()
+        MusicService.sharedInstance.getAppleMusicRecommendations { (appleMusicSongs, error) in
+            if let error = error {
+                print(error.localizedDescription)
+                self.songs = []
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
+                return
+            } else {
+                newSongs.append(contentsOf: appleMusicSongs)
+                songSearchGroup.leave()
+            }
+        }
+        
+        songSearchGroup.notify(queue: DispatchQueue.global()) {
+            newSongs.sort(by: { (first, second) -> Bool in
+                return first.name < second.name
+            })
+            DispatchQueue.main.async {
+                self.refresher.endRefreshing()
+            }
+            self.songs = newSongs
+        }
+        
+    }
+    
+    @objc func getShows() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            // TODO: Show error in getting current user's uid
+            return
+        }
+        
+        DataService.sharedInstance.getContentWithRating(uid: uid, contentType: DataService.ContentType.Show, minimumRating: 4, success: { (movieIds) in
+            self.shows = []
+            for id in movieIds {
+                TVService.sharedInstance.getRecommendedTV(id: id, success: { (recommendedIds) in
+                    var selectedCount = 0
+                    for recommendedId in recommendedIds {
+                        if !self.shows.contains(recommendedId) {
+                            self.shows.append(recommendedId)
+                        }
+                        selectedCount += 1
+                        if selectedCount == 2 {
+                            break
+                        }
+                    }
+                })
+            }
+        }) { (error) in
+            print("Failed to retrieve show ratings: \(error)")
+        }
+        
+        DataService.sharedInstance.getLikedShows(uid: uid, sucesss: { (likedShows) in
+            for cell in self.recFeedTableView.visibleCells {
+                cell.accessoryType = .none
+                self.likeButton.isHidden = true
+            }
+            
+            // add top 5 recommended shows if they have less than 5 saved movies, else add top 2 if less than 10, else top 1
+            // Checks to make sure that reccomended shows aren't shown more than once and that user has not already liked them
+            
+            for id in likedShows {
+                TVService.sharedInstance.getRecommendedTV(id: id, success: { (shows) in
+                    for i in 0..<shows.count {
+                        
+                        let showArrcontains = self.shows.contains(where: { (show) -> Bool in
+                            return show.id == shows[i].id
+                        })
+                        
+                        let likedArrContains = likedShows.contains(where: { (id) -> Bool in
+                            return Int(id) == shows[i].id
+                        })
+                        
+                        if !showArrcontains && !likedArrContains {
+                            self.shows.append(shows[i])
+                        }
+                        
+                        if likedShows.count < 5, self.shows.count == 5 {
+                            break
+                        } else if likedShows.count >= 5, likedShows.count < 10, self.shows.count == 2 {
+                            break
+                        } else if likedShows.count > 10, self.shows.count == 1 {
+                            break
+                        }
+                    }
+                })
+            }
+            
+            // Recommend shows based on what friends have liked
+            DataService.sharedInstance.getFriends(uid: uid, success: { (friends) in
+                for friendID in friends {
+                    DataService.sharedInstance.getLikedShows(uid: friendID, sucesss: { (friendsLikedShows) in
+                        for id in friendsLikedShows {
+                            TVService.sharedInstance.getShow(with: id, completion: { (show) in
+                                let showArrcontains = self.shows.contains(where: { (showInArr) -> Bool in
+                                    return showInArr.id == show.id
+                                })
+                                
+                                let likedArrContains = likedShows.contains(where: { (id) -> Bool in
+                                    return Int(id) == show.id
+                                })
+                                
+                                if !showArrcontains && !likedArrContains {
+                                    self.shows.append(show)
+                                }
+                            })
+                        }
+                    }, failure: { (error) in
+                        print(error.localizedDescription)
+                    })
+                }
+            }, failure: { (error) in
+                print(error.localizedDescription)
+            })
+            
+            DispatchQueue.main.async {
+                self.refresher.endRefreshing()
+            }
+            
+        }) { (error) in
+            // TODO: Show error
+            print(error.localizedDescription)
+        }
+    }
+}
+
+extension RecFeedViewController: UIWebViewDelegate {
+    @objc func dimissTrailer() {
+        
+        videoView.removeFromSuperview()
+        blurEffectView.removeFromSuperview()
+        
+        
+    }
+    
+    @objc func showTrailer(_ sender: Any) {
+        let tap = sender as! UITapGestureRecognizer
+        let artworkView = tap.view!
+        
+        let movie = movies[artworkView.tag]
+        MovieService.sharedInstance.getVideo(id: movie.id, width: Int(view.frame.width - 16), height: Int((view.frame.width - 16) * (9 / 16)), success: { (htm) in
+
+
+            DispatchQueue.main.async {
+
+
+                self.blurEffectView.frame = self.view.bounds
+                self.blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+                self.view.addSubview(self.blurEffectView) //if you have more UIViews, use an insertSubview
+
+                self.videoView.loadHTMLString(htm, baseURL: nil)
+
+                self.view.addSubview(self.videoView)
+            }
+        }) {
+            print("Error loading video")
         }
     }
 }

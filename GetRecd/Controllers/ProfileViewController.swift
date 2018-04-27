@@ -13,20 +13,40 @@ class ProfileViewController: UITableViewController {
     
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var profilePicture: UIImageView!
-    @IBOutlet weak var bioTextView: UITextView!
+    @IBOutlet weak var bioLabel: UILabel!
     
-    var currentUser: User!
+    @IBOutlet weak var infoCell: UITableViewCell!
+    @IBOutlet weak var settingButtonConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        settingButtonConstraint.constant = UIApplication.shared.statusBarFrame.height
+        let bgFrame = CGRect(x: self.view.bounds.origin.x, y: self.view.bounds.origin.y, width: self.view.bounds.width, height: self.view.bounds.height - tabBarController!.tabBar.frame.height)
+        let backgroundImageView = UIImageView(frame: bgFrame)
+        backgroundImageView.image = UIImage(named: "launch-bg")
+        tableView.backgroundView = backgroundImageView
+        
+        
+        infoCell.backgroundColor = .clear
+//        let adjustForTabbarInsets: UIEdgeInsets = UIEdgeInsetsMake(0, 0, self.tabBarController!.tabBar.frame.height, 0)
+//        self.tableView.contentInset = adjustForTabbarInsets
+//        self.tableView.scrollIndicatorInsets = adjustForTabbarInsets
+        self.tableView.tableFooterView = UIView()
+        
         self.profilePicture.layer.cornerRadius = self.profilePicture.frame.size.width/2
+        
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        
+        getCurrentUser()
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        getCurrentUser()
-        
         // Hide the navigation bar on the this view controller
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
     }
@@ -36,48 +56,58 @@ class ProfileViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return 4
     }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "Settings", let settingsVC = segue.destination as? ProfileSettingsViewController {
-            settingsVC.currentUser = currentUser
-            settingsVC.profilePictureImage = profilePicture.image
+
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.row > 0 {
+            return (view.frame.height - infoCell.frame.height - tabBarController!.tabBar.frame.height) / 3.0
         }
+        
+        return infoCell.frame.height
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(indexPath.row)
         switch (indexPath.row) {
-            case 2:
+            case 1:
                 // Segue to music
                 self.performSegue(withIdentifier: "showMusicLikes", sender: nil)
+                tableView.deselectRow(at: indexPath, animated: true)
+            case 2:
+                self.performSegue(withIdentifier: "showMovieLikes", sender: nil)
+                tableView.deselectRow(at: indexPath, animated: true)
+            case 3:
+                self.performSegue(withIdentifier: "showShowLikes", sender: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
             default:
                 break
         }
     }
     
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
-    
     func getCurrentUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        DataService.instance.getUser(userID: uid) { (user) in
-            self.currentUser = user
-            
-            print("GETTING USER ON PROFILE")
+        DataService.sharedInstance.getUser(uid: uid, success: { (user) in
             DispatchQueue.main.async {
-                self.nameLabel.text = self.currentUser.name
-                self.bioTextView.text = self.currentUser.bio.isEmpty ? "No Bio": self.currentUser?.bio
+                self.nameLabel.text = user.name
+                self.bioLabel.text = user.bio ?? "No Bio"
             }
             
-            DataService.instance.getProfilePicture(user: self.currentUser, handler: { (image) in
-                DispatchQueue.main.async {
-                self.profilePicture.image = image
-                }
-            })
+        }) { (error) in
+            // TODO: Show error in retrieivng user
+            print(error.localizedDescription)
         }
+        
+        DataService.sharedInstance.getProfilePicture(uid: uid, success: { (exists, image) in
+            DispatchQueue.main.async {
+                self.profilePicture.image = image
+            }
+        }) { (error) in
+            // TODO: Show error in retrieivng user picture
+            print(error.localizedDescription)
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+       
     }
 }

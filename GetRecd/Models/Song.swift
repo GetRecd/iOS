@@ -56,9 +56,9 @@ class Song: NSObject {
 //            throw SerializationError.missing("genres")
 //        }
         
-        guard let previews = attributes["previews"] as? [[String: Any]] else {
-            throw SerializationError.missing("previews")
-        }
+//        guard let previews = attributes["previews"] as? [[String: Any]] else {
+//            throw SerializationError.missing("previews")
+//        }
         
         self.type = .AppleMusic
         self.id = id
@@ -74,12 +74,11 @@ class Song: NSObject {
         // 3) Replace the "{f}" placeholder with the desired image format.
         self.artwork = self.artwork.replacingOccurrences(of: "{f}", with: "png")
         
-        let preview = previews[0]
-        self.preview = preview["url"] as! String
+        //let preview = previews[0]
+        //self.preview = preview["url"] as! String
     }
     
     init(spotifyData: SPTPartialTrack) throws {
-        
         
         guard let artists = spotifyData.artists as? [SPTPartialArtist] else {
             throw SerializationError.missing("artists")
