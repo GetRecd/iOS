@@ -278,7 +278,7 @@ class MusicService: NSObject, SPTAudioStreamingDelegate {
                     }
                 }
                 
-                if newSongs.count > 5 {
+                if songs.count > 5 {
                     for _ in 0...4 {
                         let index = Int(arc4random_uniform(UInt32(newSongs.count)))
                         if !selectedSongs.contains(newSongs[index]) {
