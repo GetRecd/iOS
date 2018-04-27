@@ -120,6 +120,12 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             let song = songs[indexPath.row]
             cell.song = song
+            
+            if likedSpotifySongs.contains(song.id) || likedAppleMusicSongs.contains(song.id) {
+                cell.accessoryType = .checkmark
+            } else {
+                cell.accessoryType = .none
+            }
             return cell
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
@@ -135,6 +141,12 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             cell.artworkView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showTrailer(_:))))
             let movie = movies[indexPath.row]
             cell.movie = movie
+            
+            if likedMovies.contains(movie.id) {
+                cell.accessoryType = .checkmark
+            } else {
+                cell.accessoryType = .none
+            }
             return cell
         case 2:
             // Note: we're using a movie cell as a tv show cell as well for efficiency 😄
@@ -150,6 +162,11 @@ class RecFeedViewController: UIViewController, UITableViewDelegate, UITableViewD
             let show = shows[indexPath.row]
             cell.artworkView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showShowTrailer(_:))))
             cell.show = show
+            if likedTVShows.contains(show.id) {
+                cell.accessoryType = .checkmark
+            } else {
+                cell.accessoryType = .none
+            }
             return cell
         default:
             return UITableViewCell()
