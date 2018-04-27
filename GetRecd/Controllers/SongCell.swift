@@ -25,6 +25,7 @@ class SongCell: UITableViewCell {
             self.artistLabel.text = ""
             self.artworkView.image = UIImage()
             self.nameLabel.text = ""
+            self.ratingsView.rating = 0
             
             self.playButton.setImage(nil, for: .normal)
             
